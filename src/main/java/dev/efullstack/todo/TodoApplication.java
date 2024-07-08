@@ -5,6 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.data.repository.ListCrudRepository;
 
@@ -33,12 +34,14 @@ class User {
 interface UserRepository extends ListCrudRepository<User, Long> { }
 
 @Data
+@Table("tasks")
 class Task {
 	@Id
 	private Long taskId;
 	private Long userId;
 	private String title;
 	private String description;
+	@Column("status")
 	private TaskStatus status;
 	private LocalDateTime dueDate;
 	private LocalDateTime createdAt;
@@ -57,6 +60,7 @@ class Task {
 interface TaskRepository extends ListCrudRepository<Task, Long> { }
 
 @Data
+@Table("tags")
 class Tag {
 	@Id
 	private Long tagId;
@@ -66,6 +70,7 @@ class Tag {
 interface TagRepository extends ListCrudRepository<Tag, Long> { }
 
 @Data
+@Table("task_tags")
 class TaskTag {
 	@Id
 	private TaskTagId id;

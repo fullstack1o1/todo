@@ -1,4 +1,3 @@
-
 CREATE TABLE IF NOT EXISTS todo_users (
         user_id SERIAL PRIMARY KEY,
         username VARCHAR(50) NOT NULL UNIQUE,
@@ -10,14 +9,14 @@ CREATE TABLE IF NOT EXISTS todo_users (
 INSERT INTO todo_users (username, email, password_hash) VALUES ('user1', 'user1@test.dev', 'password1');
 INSERT INTO todo_users (username, email, password_hash) VALUES ('user2', 'user2@test.dev', 'password2');
 
-CREATE TYPE task_status AS ENUM ('pending', 'in_progress', 'completed');
+CREATE TYPE task_status AS ENUM ('PENDING', 'IN_PROGRESS', 'COMPLETED');
 
 CREATE TABLE IF NOT EXISTS tasks (
         task_id SERIAL PRIMARY KEY,
         user_id INT NOT NULL,
         title VARCHAR(255) NOT NULL,
         description TEXT,
-        status task_status DEFAULT 'pending',  -- Use the enum type here
+        status task_status DEFAULT 'PENDING',  -- Use the enum type here
         due_date DATE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

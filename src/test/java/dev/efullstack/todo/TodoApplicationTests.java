@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 
+import java.time.LocalDateTime;
+
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -35,10 +37,23 @@ class TodoApplicationTests {
 					assertEquals(2, allUser.size());
 				},
 				() -> {
+					Task task = new Task();
+					task.setUserId(1L);
+					task.setTitle("TITLE");
+					task.setDescription("DESCRIPTION");
+					task.setStatus(Task.TaskStatus.PENDING);
+					task.setDueDate(LocalDateTime.now());
+
+					var newTask = taskRepository.save(task);
+					assertNotNull(newTask);
+					assertNotNull(newTask.getTaskId());
+					assertNotNull(newTask.getCreatedAt());
+				},
+				() -> {
 					var allTask = taskRepository.findAll();
 					System.out.println(allTask);
 					assertNotNull(allTask);
-					assertEquals(0, allTask.size());
+					assertEquals(1, allTask.size());
 				}
 		);
 	}
