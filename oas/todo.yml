@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
   title: To-Do API
   description: API for a simple To-Do application
@@ -124,24 +124,7 @@ paths:
       responses:
         '204':
           description: Task deleted successfully
-  /tags:
-    post:
-      tags:
-        - Tags
-      summary: Create a new tag
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NewTag'
-      responses:
-        '201':
-          description: Tag created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Tag'
+  /tags/{userId}:
     get:
       tags:
         - Tags
@@ -186,57 +169,6 @@ paths:
       responses:
         '204':
           description: Tag deleted successfully
-  /users/{userId}/tasks/{taskId}/tags:
-    post:
-      tags:
-        - Tasks
-        - Tags
-      summary: Add a tag to a task for a user
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: taskId
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TaskTag'
-      responses:
-        '201':
-          description: Tag added to task successfully
-    delete:
-      tags:
-        - Tasks
-        - Tags
-      summary: Remove a tag from a task for a user
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: taskId
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TaskTag'
-      responses:
-        '204':
-          description: Tag removed from task successfully
 components:
   schemas:
     Task:
@@ -259,6 +191,10 @@ components:
         due_date:
           type: string
           format: date-time
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
         created_at:
           type: string
           format: date-time
@@ -296,7 +232,11 @@ components:
     Tag:
       type: object
       properties:
-        tag_id:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        task_id:
           type: integer
         name:
           type: string
