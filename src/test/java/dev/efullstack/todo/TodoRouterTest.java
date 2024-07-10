@@ -26,13 +26,37 @@ public class TodoRouterTest {
                 () -> {
                     webTestClient
                             .post()
-                            .uri("/todo/1/tasks")
+                            .uri("/todo/{userId}/tasks", 1)
                             .contentType(MediaType.APPLICATION_JSON)
                             .bodyValue("""
+                              {
+                                  "title": "Buy grocery",
+                                  "description": "Task 1",
+                                  "dueDate": "2021-08-01T00:00:00",
+                                  "tags": [
+                                    {
+                                        "name": "shopping"
+                                    }
+                                  ]
+                              }
                             """)
                             .exchange()
                             .expectStatus()
-                            .isNoContent();
+                            .isOk()
+                            .expectBody()
+                            .json("""
+                                {
+                                    "taskId":1,
+                                    "userId":1,
+                                    "title":"Buy grocery",
+                                    "description":"Task 1",
+                                    "status": "PENDING",
+                                    "dueDate":"2021-08-01T00:00:00",
+                                    "tags":[
+                                        { "id":1,"userId":1,"taskId":null,"name":"shopping" }
+                                     ]
+                                }
+                            """);
                 },
                 () -> {
                     webTestClient
@@ -40,7 +64,21 @@ public class TodoRouterTest {
                             .uri("/todo/1/tasks/1")
                             .exchange()
                             .expectStatus()
-                            .isNoContent();
+                            .isOk()
+                            .expectBody()
+                            .json("""
+                                {
+                                    "taskId":1,
+                                    "userId":1,
+                                    "title":"Buy grocery",
+                                    "description":"Task 1",
+                                    "status": "PENDING",
+                                    "dueDate":"2021-08-01T00:00:00",
+                                    "tags":[
+                                        {"id":1,"userId":1,"taskId":1,"name":"shopping"}
+                                     ]
+                                }
+                            """);
                 },
                 () -> {
                     webTestClient
@@ -83,7 +121,18 @@ public class TodoRouterTest {
                             .uri("/todo/1/tags")
                             .exchange()
                             .expectStatus()
-                            .isNoContent();
+                            .isOk()
+                            .expectBody()
+                            .json("""
+                                [
+                                  {
+                                      "id":1,
+                                      "userId":1,
+                                      "taskId":1,
+                                      "name":"shopping"
+                                  }
+                                ]
+                            """);
                 },
                 () -> {
                     webTestClient
