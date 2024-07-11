@@ -1,3 +1,4 @@
+
 spring:
   application:
     name: todo
@@ -13,3 +14,9 @@ management:
     health:
       probes:
         enabled: true
+logging:
+  level:
+    sql: trace
+    org:
+      springframework:
+        jdbc: trace

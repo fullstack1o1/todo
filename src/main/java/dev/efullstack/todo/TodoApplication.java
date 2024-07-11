@@ -10,6 +10,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.relational.core.mapping.MappedCollection;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.data.repository.ListCrudRepository;
@@ -119,8 +120,10 @@ class Task {
 	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME, pattern = "yyyy-MM-dd'T'HH:mm:ss")
 	private LocalDateTime dueDate;
 	@JsonIgnore
+	@ReadOnlyProperty
 	private LocalDateTime createdAt;
 	@JsonIgnore
+	@ReadOnlyProperty
 	private LocalDateTime updatedAt;
 
 	//need to implement a method to get all tags for a task
