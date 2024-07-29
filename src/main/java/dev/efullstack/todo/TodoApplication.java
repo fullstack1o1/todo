@@ -126,8 +126,7 @@ class Task {
 	@ReadOnlyProperty
 	private LocalDateTime updatedAt;
 
-	//need to implement a method to get all tags for a task
-	@MappedCollection(idColumn = "task_id")
+	@MappedCollection(idColumn = "id", keyColumn = "task_id")
 	private Set<Tag> tags;
 
 	public enum TaskStatus {
@@ -164,7 +163,7 @@ class TaskService {
 	}
 
 	public Task findByTaskId(Long userId, Long taskId) {
-		return taskRepository.findByUserIdAndTaskId(userId,taskId).orElseThrow( () -> new TaskNotFoundException());
+		return taskRepository.findByUserIdAndTaskId(userId,taskId).orElseThrow(TaskNotFoundException::new);
 	}
 }
 
@@ -174,7 +173,6 @@ class Tag {
 	@Id
 	private Long id;
 	private Long userId;
-	private Long taskId;
 	private String name;
 }
 
@@ -191,3 +189,14 @@ class TagService {
 		return tagRepository.findAllByUserId(userId);
 	}
 }
+
+@Data
+@Table("task_tags")
+class TaskTag {
+	@Id
+	private Long id;
+	private Long taskId;
+	private Long tagId;
+}
+
+interface TaskTagRepository extends ListCrudRepository<TaskTag, Long> {}

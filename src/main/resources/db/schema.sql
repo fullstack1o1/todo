@@ -29,15 +29,23 @@ CREATE INDEX idx_status ON tasks(status);
 
 CREATE TABLE IF NOT EXISTS tags (
     id SERIAL PRIMARY KEY,
-    task_id INT NOT NULL,
     user_id INT NOT NULL,
     name VARCHAR(50) NOT NULL UNIQUE,
+    CONSTRAINT fk_user
+        FOREIGN KEY(user_id)
+            REFERENCES todo_users(user_id)
+            ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS task_tags (
+    task_id INT NOT NULL,
+    tag_id INT NOT NULL,
     CONSTRAINT fk_task
         FOREIGN KEY(task_id)
             REFERENCES tasks(task_id)
             ON DELETE CASCADE,
-    CONSTRAINT fk_user
-        FOREIGN KEY(user_id)
-            REFERENCES todo_users(user_id)
+    CONSTRAINT fk_tag
+        FOREIGN KEY(tag_id)
+            REFERENCES tags(id)
             ON DELETE CASCADE
 );

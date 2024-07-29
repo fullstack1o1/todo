@@ -1,5 +1,7 @@
 
 spring:
+  jmx:
+    enabled: true
   application:
     name: todo
   datasource:
@@ -14,6 +16,10 @@ management:
     health:
       probes:
         enabled: true
+  endpoints:
+    jmx:
+      exposure:
+        include: "*"
 logging:
   level:
     sql: trace

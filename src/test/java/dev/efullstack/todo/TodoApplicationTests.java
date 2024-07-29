@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -54,12 +55,12 @@ class TodoApplicationTests {
 					tag.setName("TAG");
 					tag.setUserId(1L);
 
-					Tag tag1 = new Tag();
-					tag1.setName("TAG1");
-					tag1.setUserId(1L);
+//					Tag tag1 = new Tag();
+//					tag1.setName("TAG1");
+//					tag1.setUserId(1L);
 
 					task.setTags(
-							Set.of(tag, tag1)
+							Set.of(tag)
 					);
 
 					var newTask = taskRepository.save(task);
@@ -83,6 +84,7 @@ class TodoApplicationTests {
 					var allTag = tagRepository.findAll();
 					System.out.println(allTag);
 				}
+
 		);
 	}
 }
