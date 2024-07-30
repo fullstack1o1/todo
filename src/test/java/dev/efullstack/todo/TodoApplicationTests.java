@@ -28,6 +28,9 @@ class TodoApplicationTests {
 	@Autowired
 	private TagRepository tagRepository;
 
+	@Autowired
+	private TaskTagRepository taskTagRepository;
+
 	@Test
 	void contextLoads() {
 	}
@@ -55,14 +58,16 @@ class TodoApplicationTests {
 					tag.setName("TAG");
 					tag.setUserId(1L);
 
-//					Tag tag1 = new Tag();
-//					tag1.setName("TAG1");
-//					tag1.setUserId(1L);
+					Tag tag1 = new Tag();
+					tag1.setName("TAG1");
+					tag1.setUserId(1L);
 
-					task.setTags(
-							Set.of(tag)
-					);
+					var tags = tagRepository.saveAll(List.of(tag, tag1));
 
+					task.setTags(Set.of(
+						new TaskTag(null, task.getTaskId(), tags.get(0).getId()),
+						new TaskTag(null, task.getTaskId(), tags.get(1).getId())
+					));
 					var newTask = taskRepository.save(task);
 					System.out.println(newTask);
 					assertNotNull(newTask);
@@ -83,6 +88,9 @@ class TodoApplicationTests {
 				() -> {
 					var allTag = tagRepository.findAll();
 					System.out.println(allTag);
+				},
+				() -> {
+					taskTagRepository.findAll().forEach(System.out::println);
 				}
 
 		);

@@ -125,9 +125,8 @@ class Task {
 	@JsonIgnore
 	@ReadOnlyProperty
 	private LocalDateTime updatedAt;
-
-	@MappedCollection(idColumn = "id", keyColumn = "task_id")
-	private Set<Tag> tags;
+	@MappedCollection(idColumn = "task_id", keyColumn = "tag_id")
+	private Set<TaskTag> tags = Set.of();
 
 	public enum TaskStatus {
 		PENDING,
@@ -156,9 +155,9 @@ class TaskService {
 	public Mono<Task> newTask(Long userId, Task task) {
 		assert Objects.nonNull(task);
 		task.setUserId(userId);
-		if(Objects.nonNull(task.getTags()) && !task.getTags().isEmpty()) {
+		/*if(Objects.nonNull(task.getTags()) && !task.getTags().isEmpty()) {
 			task.getTags().forEach(tag -> tag.setUserId(userId));
-		}
+		}*/
 		return Mono.fromCallable(() -> taskRepository.save(task));
 	}
 
@@ -192,6 +191,7 @@ class TagService {
 
 @Data
 @Table("task_tags")
+@AllArgsConstructor
 class TaskTag {
 	@Id
 	private Long id;

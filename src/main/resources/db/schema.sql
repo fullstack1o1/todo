@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS tags (
 );
 
 CREATE TABLE IF NOT EXISTS task_tags (
+    id SERIAL PRIMARY KEY,
     task_id INT NOT NULL,
     tag_id INT NOT NULL,
     CONSTRAINT fk_task
