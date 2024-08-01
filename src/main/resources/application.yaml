@@ -1,28 +1,14 @@
 
 spring:
-  jmx:
-    enabled: true
   application:
     name: todo
   datasource:
     url: jdbc:postgresql://localhost:5432/todo
     username: myuser
     password: secret
-management:
-  health:
-    db:
-      enabled: false
-  endpoint:
-    health:
-      probes:
-        enabled: true
-  endpoints:
-    jmx:
-      exposure:
-        include: "*"
+
 logging:
   level:
-    sql: trace
     org:
       springframework:
-        jdbc: trace
+        jdbc: DEBUG

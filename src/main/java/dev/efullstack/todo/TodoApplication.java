@@ -3,7 +3,6 @@ package dev.efullstack.todo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
@@ -49,12 +48,13 @@ public class TodoApplication {
 				})
 				.path("/todo/{userId}", builder -> builder
 						.POST("/tasks", todoHandler::createTask)
-						.GET("/tasks/{taskId}", todoHandler::taskByTaskId)
-						.GET("/tasks", todoHandler::tasks)
+						.GET("/tasks/{taskId}", request -> ServerResponse.noContent().build())
+						.GET("/tasks", request -> ServerResponse.noContent().build())
 						.PATCH("/tasks/{taskId}", request -> ServerResponse.noContent().build())
 						.DELETE("/tasks/{taskId}", request -> ServerResponse.noContent().build())
+						.POST("/tags", todoHandler::newTags)
 						.GET("/tags/{tagId}", request -> ServerResponse.noContent().build())
-						.GET("/tags", todoHandler::tags)
+						.GET("/tags", request -> ServerResponse.noContent().build())
 						.DELETE("/tags/{tagId}", request -> ServerResponse.noContent().build())
 				)
 				.after((request, response) -> {
@@ -79,19 +79,12 @@ class TodoHandler {
 				.flatMap(ServerResponse.ok()::bodyValue);
 	}
 
-	public Mono<ServerResponse> taskByTaskId(ServerRequest request) {
+	public Mono<ServerResponse> newTags(ServerRequest request) {
 		var userId = Long.valueOf(request.pathVariable("userId"));
-		var taskId = Long.valueOf(request.pathVariable("taskId"));
-		return ServerResponse.ok().bodyValue(taskService.findByTaskId(userId, taskId));
-	}
-
-	public Mono<ServerResponse> tasks(ServerRequest request) {
-		return ServerResponse.noContent().build();
-	}
-
-	public Mono<ServerResponse> tags(ServerRequest request) {
-		var userId = Long.valueOf(request.pathVariable("userId"));
-		return ServerResponse.ok().bodyValue(tagService.findAll(userId));
+		return request
+				.bodyToMono(Tag.class)
+				.flatMap(tag -> tagService.newTag(userId, tag))
+				.flatMap(tag -> ServerResponse.ok().bodyValue(tag));
 	}
 }
 
@@ -104,9 +97,7 @@ class User {
 	private String username;
 	private String email;
 	private String passwordHash;
-
 }
-interface UserRepository extends ListCrudRepository<User, Long> {}
 
 @Data
 @Table("tasks")
@@ -125,6 +116,7 @@ class Task {
 	@JsonIgnore
 	@ReadOnlyProperty
 	private LocalDateTime updatedAt;
+
 	@MappedCollection(idColumn = "task_id", keyColumn = "tag_id")
 	private Set<TaskTag> tags = Set.of();
 
@@ -132,37 +124,6 @@ class Task {
 		PENDING,
 		IN_PROGRESS,
 		COMPLETED
-	}
-}
-
-@ResponseStatus(reason = "Task not found", code = HttpStatus.NOT_FOUND)
-class TaskNotFoundException extends RuntimeException {
-	public TaskNotFoundException() {}
-	public TaskNotFoundException(String message) {
-		super(message);
-	}
-}
-
-interface TaskRepository extends ListCrudRepository<Task, Long> {
-	Optional<Task> findByUserIdAndTaskId(Long userId, Long taskId);
-}
-
-@Service
-@RequiredArgsConstructor
-class TaskService {
-	final TaskRepository taskRepository;
-
-	public Mono<Task> newTask(Long userId, Task task) {
-		assert Objects.nonNull(task);
-		task.setUserId(userId);
-		/*if(Objects.nonNull(task.getTags()) && !task.getTags().isEmpty()) {
-			task.getTags().forEach(tag -> tag.setUserId(userId));
-		}*/
-		return Mono.fromCallable(() -> taskRepository.save(task));
-	}
-
-	public Task findByTaskId(Long userId, Long taskId) {
-		return taskRepository.findByUserIdAndTaskId(userId,taskId).orElseThrow(TaskNotFoundException::new);
 	}
 }
 
@@ -175,8 +136,45 @@ class Tag {
 	private String name;
 }
 
+@Data
+@Table("task_tags")
+@AllArgsConstructor
+class TaskTag {
+	private Long taskId;
+	private Long tagId;
+}
+
+interface UserRepository extends ListCrudRepository<User, Long> {}
+interface TaskRepository extends ListCrudRepository<Task, Long> {
+	Optional<Task> findByUserIdAndTaskId(Long userId, Long taskId);
+}
 interface TagRepository extends ListCrudRepository<Tag, Long> {
 	List<Tag> findAllByUserId(Long userId);
+}
+interface TaskTagRepository extends ListCrudRepository<TaskTag, Long> {}
+
+@ResponseStatus(reason = "Task not found", code = HttpStatus.NOT_FOUND)
+class TaskNotFoundException extends RuntimeException {
+	public TaskNotFoundException() {}
+	public TaskNotFoundException(String message) {
+		super(message);
+	}
+}
+
+@Service
+@RequiredArgsConstructor
+class TaskService {
+	final TaskRepository taskRepository;
+
+	public Mono<Task> newTask(Long userId, Task task) {
+		assert Objects.nonNull(task);
+		task.setUserId(userId);
+		return Mono.fromCallable(() -> taskRepository.save(task));
+	}
+
+	public Task findByTaskId(Long userId, Long taskId) {
+		return taskRepository.findByUserIdAndTaskId(userId,taskId).orElseThrow(TaskNotFoundException::new);
+	}
 }
 
 @Service
@@ -187,16 +185,9 @@ class TagService {
 	public List<Tag> findAll(Long userId) {
 		return tagRepository.findAllByUserId(userId);
 	}
-}
 
-@Data
-@Table("task_tags")
-@AllArgsConstructor
-class TaskTag {
-	@Id
-	private Long id;
-	private Long taskId;
-	private Long tagId;
+	public Mono<Tag> newTag(Long userId, Tag tag) {
+		tag.setUserId(userId);
+		return Mono.fromCallable(() -> tagRepository.save(tag));
+	}
 }
-
-interface TaskTagRepository extends ListCrudRepository<TaskTag, Long> {}

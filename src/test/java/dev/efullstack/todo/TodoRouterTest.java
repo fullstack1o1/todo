@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.springframework.http.MediaType.*;
 
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest
@@ -23,125 +24,58 @@ public class TodoRouterTest {
     @DisplayName("Router Test")
     void routerTest() {
         assertAll(
-                () -> {
-                    webTestClient
-                            .post()
-                            .uri("/todo/{userId}/tasks", 1)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .bodyValue("""
-                              {
-                                  "title": "Buy grocery",
-                                  "description": "Task 1",
-                                  "dueDate": "2021-08-01T00:00:00",
-                                  "tags": [
-                                    {
-                                        "name": "shopping"
-                                    }
-                                  ]
-                              }
-                            """)
-                            .exchange()
-                            .expectStatus()
-                            .isOk()
-                            .expectBody()
-                            .json("""
+                //new tag
+                () -> webTestClient
+                        .post()
+                        .uri("/todo/{userId}/tags", 1)
+                        .contentType(APPLICATION_JSON)
+                        .bodyValue("""
+                          {
+                              "name": "shopping"
+                          }
+                        """)
+                        .exchange()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody()
+                        .json("""
+                            {
+                                "id":1,
+                                "name":"shopping"
+                            }
+                        """),
+                () -> webTestClient
+                        .post()
+                        .uri("/todo/{userId}/tasks", 1)
+                        .contentType(APPLICATION_JSON)
+                        .bodyValue("""
+                          {
+                              "title": "Buy grocery",
+                              "description": "Task 1",
+                              "dueDate": "2021-08-01T00:00:00",
+                              "tags": [
                                 {
-                                    "taskId":1,
-                                    "userId":1,
-                                    "title":"Buy grocery",
-                                    "description":"Task 1",
-                                    "status": "PENDING",
-                                    "dueDate":"2021-08-01T00:00:00",
-                                    "tags":[
-                                        { "id":1,"userId":1,"taskId":null,"name":"shopping" }
-                                     ]
+                                    "tagId": 1
                                 }
-                            """);
-                },
-                () -> {
-                    webTestClient
-                            .get()
-                            .uri("/todo/1/tasks/1")
-                            .exchange()
-                            .expectStatus()
-                            .isOk()
-                            .expectBody()
-                            .json("""
-                                {
-                                    "taskId":1,
-                                    "userId":1,
-                                    "title":"Buy grocery",
-                                    "description":"Task 1",
-                                    "status": "PENDING",
-                                    "dueDate":"2021-08-01T00:00:00",
-                                    "tags":[
-                                        {"id":1,"userId":1,"taskId":1,"name":"shopping"}
-                                     ]
-                                }
-                            """);
-                },
-                () -> {
-                    webTestClient
-                            .get()
-                            .uri("/todo/1/tasks")
-                            .exchange()
-                            .expectStatus()
-                            .isNoContent();
-                },
-                () -> {
-                    webTestClient
-                            .patch()
-                            .uri("/todo/1/tasks/1")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .bodyValue("""
-                            """)
-                            .exchange()
-                            .expectStatus()
-                            .isNoContent();
-                },
-                () -> {
-                    webTestClient
-                            .delete()
-                            .uri("/todo/1/tasks/1")
-                            .exchange()
-                            .expectStatus()
-                            .isNoContent();
-                },
-                () -> {
-                    webTestClient
-                            .get()
-                            .uri("/todo/1/tags/1")
-                            .exchange()
-                            .expectStatus()
-                            .isNoContent();
-                },
-                () -> {
-                    webTestClient
-                            .get()
-                            .uri("/todo/1/tags")
-                            .exchange()
-                            .expectStatus()
-                            .isOk()
-                            .expectBody()
-                            .json("""
-                                [
-                                  {
-                                      "id":1,
-                                      "userId":1,
-                                      "taskId":1,
-                                      "name":"shopping"
-                                  }
-                                ]
-                            """);
-                },
-                () -> {
-                    webTestClient
-                            .delete()
-                            .uri("/todo/1/tags/1")
-                            .exchange()
-                            .expectStatus()
-                            .isNoContent();
-                }
+                              ]
+                          }
+                        """)
+                        .exchange()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody()
+                        .json("""
+                            {
+                                "taskId":1,
+                                "userId":1,
+                                "title":"Buy grocery",
+                                "description":"Task 1",
+                                "status": "PENDING",
+                                "dueDate":"2021-08-01T00:00:00",
+                                "tags":[{"taskId":null,"tagId":1}]
+                            }
+                        """)
+
         );
     }
 

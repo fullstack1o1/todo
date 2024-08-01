@@ -19,9 +19,9 @@ CREATE TABLE IF NOT EXISTS tasks (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_user
-    FOREIGN KEY(user_id)
-    REFERENCES todo_users(user_id)
-    ON DELETE CASCADE
+        FOREIGN KEY(user_id)
+            REFERENCES todo_users(user_id)
+            ON DELETE CASCADE
 );
 
 CREATE INDEX idx_user_id ON tasks(user_id);
@@ -38,9 +38,9 @@ CREATE TABLE IF NOT EXISTS tags (
 );
 
 CREATE TABLE IF NOT EXISTS task_tags (
-    id SERIAL PRIMARY KEY,
     task_id INT NOT NULL,
     tag_id INT NOT NULL,
+    PRIMARY KEY (task_id, tag_id),
     CONSTRAINT fk_task
         FOREIGN KEY(task_id)
             REFERENCES tasks(task_id)

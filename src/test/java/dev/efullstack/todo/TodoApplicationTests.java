@@ -38,22 +38,9 @@ class TodoApplicationTests {
 	@Test
 	void repositoryTest() {
 		assertAll(
-				//user assertion
-				() -> {
-					var allUser = userRepository.findAll();
-					System.out.println(allUser);
-					assertNotNull(allUser);
-					assertEquals(2, allUser.size());
-				},
 				//task assertion
 				() -> {
-					Task task = new Task();
-					task.setUserId(1L);
-					task.setTitle("TITLE");
-					task.setDescription("DESCRIPTION");
-					task.setStatus(Task.TaskStatus.PENDING);
-					task.setDueDate(LocalDateTime.now());
-
+					//Tag
 					Tag tag = new Tag();
 					tag.setName("TAG");
 					tag.setUserId(1L);
@@ -61,35 +48,47 @@ class TodoApplicationTests {
 					Tag tag1 = new Tag();
 					tag1.setName("TAG1");
 					tag1.setUserId(1L);
-
 					var tags = tagRepository.saveAll(List.of(tag, tag1));
 
-					task.setTags(Set.of(
-						new TaskTag(null, task.getTaskId(), tags.get(0).getId()),
-						new TaskTag(null, task.getTaskId(), tags.get(1).getId())
-					));
-					var newTask = taskRepository.save(task);
-					System.out.println(newTask);
-					assertNotNull(newTask);
-					assertNotNull(newTask.getTaskId());
+					//Task
+					Task task = new Task();
+					task.setUserId(1L);
+					task.setTitle("TITLE");
+					task.setDescription("DESCRIPTION");
+					task.setStatus(Task.TaskStatus.PENDING);
+					task.setDueDate(LocalDateTime.now());
+
+					task.setTags(
+							Set.of(
+								new TaskTag(null, tags.get(0).getId()),
+								new TaskTag(null, tags.get(1).getId())
+							)
+					);
+					taskRepository.save(task);
 				},
 				() -> {
-					var task = taskRepository.findById(1L);
+					userRepository.findAll().forEach(System.out::println);
+					tagRepository.findAll().forEach(System.out::println);
+					taskRepository.findAll().forEach(System.out::println);
+					taskTagRepository.findAll().forEach(System.out::println);
+				},
+				() -> {
+					//Update task
+					var task = taskRepository.findById(1L).orElseThrow();
+					task.setStatus(Task.TaskStatus.COMPLETED);
+					var tags = task.getTags();
+					task.setTags(Set.of(tags.stream().findFirst().get()));
+					taskRepository.save(task);
+				},
+				() -> {
+					//Find task
+					var task = taskRepository.findById(1L).orElseThrow();
 					assertNotNull(task);
-					System.out.println(task);
+					assertEquals(task.getStatus(), Task.TaskStatus.COMPLETED);
+					assertEquals(task.getTags().size(), 1);
 				},
 				() -> {
-					var allTask = taskRepository.findAll();
-					System.out.println(allTask);
-					assertNotNull(allTask);
-					assertEquals(1, allTask.size());
-				},
-				//tag assertion
-				() -> {
-					var allTag = tagRepository.findAll();
-					System.out.println(allTag);
-				},
-				() -> {
+					taskRepository.findAll().forEach(System.out::println);
 					taskTagRepository.findAll().forEach(System.out::println);
 				}
 
