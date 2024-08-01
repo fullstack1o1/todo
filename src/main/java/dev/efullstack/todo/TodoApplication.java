@@ -17,6 +17,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
@@ -25,10 +26,11 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.Objects.nonNull;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 @SpringBootApplication
 @Slf4j
@@ -49,11 +51,12 @@ public class TodoApplication {
 				.path("/todo/{userId}", builder -> builder
 						.POST("/tasks", todoHandler::createTask)
 						.GET("/tasks/{taskId}", request -> ServerResponse.noContent().build())
-						.GET("/tasks", request -> ServerResponse.noContent().build())
-						.PATCH("/tasks/{taskId}", request -> ServerResponse.noContent().build())
+						.GET("/tasks", todoHandler::tasks)
+						.PATCH("/tasks/{taskId}", todoHandler::updateTask)
 						.DELETE("/tasks/{taskId}", request -> ServerResponse.noContent().build())
 						.POST("/tags", todoHandler::newTags)
-						.GET("/tags/{tagId}", request -> ServerResponse.noContent().build())
+						.GET("/tags/{tagId}", todoHandler::tagById)
+						.PATCH("/tags/{tagId}", request -> ServerResponse.noContent().build())
 						.GET("/tags", request -> ServerResponse.noContent().build())
 						.DELETE("/tags/{tagId}", request -> ServerResponse.noContent().build())
 				)
@@ -85,6 +88,27 @@ class TodoHandler {
 				.bodyToMono(Tag.class)
 				.flatMap(tag -> tagService.newTag(userId, tag))
 				.flatMap(tag -> ServerResponse.ok().bodyValue(tag));
+	}
+
+	public Mono<ServerResponse> updateTask(ServerRequest request) {
+		var userId = Long.valueOf(request.pathVariable("userId"));
+		var taskId = Long.valueOf(request.pathVariable("taskId"));
+		return request
+				.bodyToMono(Task.class)
+				.flatMap(task -> taskService.updateTask(userId, taskId, task))
+				.flatMap(ServerResponse.ok()::bodyValue);
+	}
+
+	public Mono<ServerResponse> tasks(ServerRequest request) {
+		var userId = Long.valueOf(request.pathVariable("userId"));
+		return ServerResponse.ok().bodyValue(taskService.allTask(userId));
+	}
+
+	public Mono<ServerResponse> tagById(ServerRequest request) {
+		var userId = Long.valueOf(request.pathVariable("userId"));
+		var tagId = Long.valueOf(request.pathVariable("tagId"));
+		return Mono.fromCallable(() -> tagService.tagById(userId, tagId))
+				.flatMap(ServerResponse.ok()::bodyValue);
 	}
 }
 
@@ -147,9 +171,11 @@ class TaskTag {
 interface UserRepository extends ListCrudRepository<User, Long> {}
 interface TaskRepository extends ListCrudRepository<Task, Long> {
 	Optional<Task> findByUserIdAndTaskId(Long userId, Long taskId);
+	List<Task> findTasksByUserId(Long userId);
 }
 interface TagRepository extends ListCrudRepository<Tag, Long> {
 	List<Tag> findAllByUserId(Long userId);
+	Optional<Tag> findByUserIdAndId(Long userId, Long tagId);
 }
 interface TaskTagRepository extends ListCrudRepository<TaskTag, Long> {}
 
@@ -161,19 +187,54 @@ class TaskNotFoundException extends RuntimeException {
 	}
 }
 
+@ResponseStatus(reason = "Tag not found", code = HttpStatus.NOT_FOUND)
+class TagNotFoundException extends RuntimeException {
+	public TagNotFoundException() {}
+	public TagNotFoundException(String message) {
+		super(message);
+	}
+}
+
 @Service
 @RequiredArgsConstructor
 class TaskService {
 	final TaskRepository taskRepository;
 
 	public Mono<Task> newTask(Long userId, Task task) {
-		assert Objects.nonNull(task);
+		assert nonNull(task);
 		task.setUserId(userId);
 		return Mono.fromCallable(() -> taskRepository.save(task));
 	}
 
 	public Task findByTaskId(Long userId, Long taskId) {
 		return taskRepository.findByUserIdAndTaskId(userId,taskId).orElseThrow(TaskNotFoundException::new);
+	}
+
+	public Mono<Task> updateTask(Long userId, Long taskId, Task task) {
+		return Mono.fromCallable(() -> taskRepository.findByUserIdAndTaskId(userId,taskId).orElseThrow(TaskNotFoundException::new))
+				.zipWith(Mono.just(task), (dbTask, requestTask) -> {
+					if (nonNull(requestTask.getTitle())) {
+						dbTask.setTitle(requestTask.getTitle());
+					}
+					if (nonNull(requestTask.getDescription())) {
+						dbTask.setDescription(requestTask.getDescription());
+					}
+					if (nonNull(requestTask.getStatus())) {
+						dbTask.setStatus(requestTask.getStatus());
+					}
+					if (nonNull(requestTask.getDueDate())) {
+						dbTask.setDueDate(requestTask.getDueDate());
+					}
+					if (nonNull(requestTask.getTags())) {
+						dbTask.setTags(requestTask.getTags());
+					}
+					return dbTask;
+				})
+				.map(taskRepository::save);
+	}
+
+	public List<Task> allTask(Long userId) {
+		return taskRepository.findTasksByUserId(userId);
 	}
 }
 
@@ -182,12 +243,13 @@ class TaskService {
 class TagService {
 	final TagRepository tagRepository;
 
-	public List<Tag> findAll(Long userId) {
-		return tagRepository.findAllByUserId(userId);
-	}
 
 	public Mono<Tag> newTag(Long userId, Tag tag) {
 		tag.setUserId(userId);
 		return Mono.fromCallable(() -> tagRepository.save(tag));
+	}
+
+	public Tag tagById(Long userId, Long tagId) {
+		return tagRepository.findByUserIdAndId(userId,tagId).orElseThrow(TagNotFoundException::new);
 	}
 }
