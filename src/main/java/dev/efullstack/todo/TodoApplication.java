@@ -56,7 +56,7 @@ public class TodoApplication {
 						.DELETE("/tasks/{taskId}", request -> ServerResponse.noContent().build())
 						.POST("/tags", todoHandler::newTags)
 						.GET("/tags/{tagId}", todoHandler::tagById)
-						.PATCH("/tags/{tagId}", request -> ServerResponse.noContent().build())
+						.PATCH("/tags/{tagId}", todoHandler::updateTag)
 						.GET("/tags", request -> ServerResponse.noContent().build())
 						.DELETE("/tags/{tagId}", request -> ServerResponse.noContent().build())
 				)
@@ -108,6 +108,15 @@ class TodoHandler {
 		var userId = Long.valueOf(request.pathVariable("userId"));
 		var tagId = Long.valueOf(request.pathVariable("tagId"));
 		return Mono.fromCallable(() -> tagService.tagById(userId, tagId))
+				.flatMap(ServerResponse.ok()::bodyValue);
+	}
+
+	public Mono<ServerResponse> updateTag(ServerRequest request) {
+		var userId = Long.valueOf(request.pathVariable("userId"));
+		var tagId = Long.valueOf(request.pathVariable("tagId"));
+		return request
+				.bodyToMono(Tag.class)
+				.flatMap(tag -> tagService.updateTag(userId, tagId, tag))
 				.flatMap(ServerResponse.ok()::bodyValue);
 	}
 }
@@ -243,7 +252,6 @@ class TaskService {
 class TagService {
 	final TagRepository tagRepository;
 
-
 	public Mono<Tag> newTag(Long userId, Tag tag) {
 		tag.setUserId(userId);
 		return Mono.fromCallable(() -> tagRepository.save(tag));
@@ -251,5 +259,15 @@ class TagService {
 
 	public Tag tagById(Long userId, Long tagId) {
 		return tagRepository.findByUserIdAndId(userId,tagId).orElseThrow(TagNotFoundException::new);
+	}
+
+	public Mono<Tag> updateTag(Long userId, Long tagId, Tag tag) {
+		return Mono.fromCallable(() -> tagRepository.findByUserIdAndId(userId,tagId).orElseThrow(TagNotFoundException::new))
+				.zipWith(Mono.just(tag),(dbTag, requestTag) -> {
+					if (nonNull(requestTag.getName())) {
+						dbTag.setName(requestTag.getName());
+					}
+					return dbTag;
+				});
 	}
 }

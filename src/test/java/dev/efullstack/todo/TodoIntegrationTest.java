@@ -25,7 +25,7 @@ public class TodoIntegrationTest {
         var userId = 1L;
 
         assertAll(
-                //new tag
+                //TAG - POST
                 () -> webTestClient
                         .post()
                         .uri("/todo/{userId}/tags", userId)
@@ -45,6 +45,7 @@ public class TodoIntegrationTest {
                                 "name":"shopping"
                             }
                         """),
+                //TAG - GET
                 () -> webTestClient
                         .get()
                         .uri("/todo/{userId}/tags/{tagId}", userId, 1)
@@ -59,12 +60,35 @@ public class TodoIntegrationTest {
                                 "name":"shopping"
                             }
                         """),
+                //TAG - PATCH
+                () -> webTestClient
+                        .patch()
+                        .uri("/todo/{userId}/tags/{tagId}", userId, 1)
+                        .contentType(APPLICATION_JSON)
+                        .bodyValue("""
+                                {
+                                    "name":"Shopping"
+                                }
+                                """)
+                        .exchange()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody()
+                        .json("""
+                            {
+                                "id":1,
+                                "userId": 1,
+                                "name":"Shopping"
+                            }
+                        """),
+                //TAG - GET
                 () -> webTestClient
                         .get()
                         .uri("/todo/{userId}/tags/{tagId}", userId, 2)
                         .exchange()
                         .expectStatus()
                         .isNotFound(),
+                //TASK - POST
                 () -> webTestClient
                         .post()
                         .uri("/todo/{userId}/tasks", userId)
@@ -96,6 +120,7 @@ public class TodoIntegrationTest {
                                 "tags":[{"taskId":null,"tagId":1}]
                             }
                         """),
+                //TASK - PATCH
                 () -> webTestClient
                         .patch()
                         .uri("/todo/{userId}/tasks/{taskId}", userId, 1)
@@ -121,6 +146,7 @@ public class TodoIntegrationTest {
                                 "tags":[]
                             }
                         """),
+                //TASK - PATCH
                 () -> webTestClient
                         .patch()
                         .uri("/todo/{userId}/tasks/{taskId}", userId, 2)
@@ -136,6 +162,7 @@ public class TodoIntegrationTest {
                         .expectBody()
                         .jsonPath("$.path").isEqualTo("/todo/1/tasks/2")
                         .jsonPath("$.status").isEqualTo(404),
+                //TASK - GET
                 () -> webTestClient
                         .get()
                         .uri("/todo/{userId}/tasks", userId)
