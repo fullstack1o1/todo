@@ -50,7 +50,7 @@ public class TodoApplication {
 				})
 				.path("/todo/{userId}", builder -> builder
 						.POST("/tasks", todoHandler::createTask)
-						.GET("/tasks/{taskId}", request -> ServerResponse.noContent().build())
+						.GET("/tasks/{taskId}", todoHandler::findTaskById)
 						.GET("/tasks", todoHandler::tasks)
 						.PATCH("/tasks/{taskId}", todoHandler::updateTask)
 						.DELETE("/tasks/{taskId}", request -> ServerResponse.noContent().build())
@@ -117,6 +117,13 @@ class TodoHandler {
 		return request
 				.bodyToMono(Tag.class)
 				.flatMap(tag -> tagService.updateTag(userId, tagId, tag))
+				.flatMap(ServerResponse.ok()::bodyValue);
+	}
+
+	public Mono<ServerResponse> findTaskById(ServerRequest request) {
+		var userId = Long.valueOf(request.pathVariable("userId"));
+		var taskId = Long.valueOf(request.pathVariable("taskId"));
+		return taskService.findByTaskId(userId, taskId)
 				.flatMap(ServerResponse.ok()::bodyValue);
 	}
 }
@@ -215,8 +222,8 @@ class TaskService {
 		return Mono.fromCallable(() -> taskRepository.save(task));
 	}
 
-	public Task findByTaskId(Long userId, Long taskId) {
-		return taskRepository.findByUserIdAndTaskId(userId,taskId).orElseThrow(TaskNotFoundException::new);
+	public Mono<Task> findByTaskId(Long userId, Long taskId) {
+		return Mono.fromCallable(() -> taskRepository.findByUserIdAndTaskId(userId,taskId).orElseThrow(TaskNotFoundException::new));
 	}
 
 	public Mono<Task> updateTask(Long userId, Long taskId, Task task) {

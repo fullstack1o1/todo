@@ -6,11 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.springframework.http.MediaType.*;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest
@@ -162,6 +161,25 @@ public class TodoIntegrationTest {
                         .expectBody()
                         .jsonPath("$.path").isEqualTo("/todo/1/tasks/2")
                         .jsonPath("$.status").isEqualTo(404),
+                //TASK - byId
+                () -> webTestClient
+                        .get()
+                        .uri("/todo/{userId}/tasks/{taskId}", userId, 1)
+                        .exchange()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody()
+                        .json("""
+{
+                                "taskId":1,
+                                "userId":1,
+                                "title":"Buy Grocery",
+                                "description":"Task 1",
+                                "status":"PENDING",
+                                "dueDate":"2021-08-01T00:00:00",
+                                "tags":[]
+                            }
+                         """),
                 //TASK - GET
                 () -> webTestClient
                         .get()
@@ -186,5 +204,4 @@ public class TodoIntegrationTest {
 
         );
     }
-
 }
