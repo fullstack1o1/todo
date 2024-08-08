@@ -17,7 +17,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
@@ -27,7 +26,6 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -56,6 +54,7 @@ public class TodoApplication {
 						.DELETE("/tasks/{taskId}", request -> ServerResponse.noContent().build())
 						.POST("/tags", todoHandler::newTags)
 						.GET("/tags/{tagId}", todoHandler::tagById)
+						.GET("/tags/{tagId}/tasks", todoHandler::tasksByTagId)
 						.PATCH("/tags/{tagId}", todoHandler::updateTag)
 						.GET("/tags", request -> ServerResponse.noContent().build())
 						.DELETE("/tags/{tagId}", request -> ServerResponse.noContent().build())
@@ -73,6 +72,7 @@ public class TodoApplication {
 class TodoHandler {
 	final TaskService taskService;
 	final TagService tagService;
+	final TaskTagService taskTagService;
 
 	public Mono<ServerResponse> createTask(ServerRequest request) {
 		var userId = Long.valueOf(request.pathVariable("userId"));
@@ -107,7 +107,7 @@ class TodoHandler {
 	public Mono<ServerResponse> tagById(ServerRequest request) {
 		var userId = Long.valueOf(request.pathVariable("userId"));
 		var tagId = Long.valueOf(request.pathVariable("tagId"));
-		return Mono.fromCallable(() -> tagService.tagById(userId, tagId))
+		return tagService.tagById(userId, tagId)
 				.flatMap(ServerResponse.ok()::bodyValue);
 	}
 
@@ -124,6 +124,14 @@ class TodoHandler {
 		var userId = Long.valueOf(request.pathVariable("userId"));
 		var taskId = Long.valueOf(request.pathVariable("taskId"));
 		return taskService.findByTaskId(userId, taskId)
+				.flatMap(ServerResponse.ok()::bodyValue);
+	}
+
+	public Mono<ServerResponse> tasksByTagId(ServerRequest request) {
+		var userId = Long.valueOf(request.pathVariable("userId"));
+		var tagId = Long.valueOf(request.pathVariable("tagId"));
+
+		return taskTagService.findTagsByTagId(userId, tagId)
 				.flatMap(ServerResponse.ok()::bodyValue);
 	}
 }
@@ -193,7 +201,9 @@ interface TagRepository extends ListCrudRepository<Tag, Long> {
 	List<Tag> findAllByUserId(Long userId);
 	Optional<Tag> findByUserIdAndId(Long userId, Long tagId);
 }
-interface TaskTagRepository extends ListCrudRepository<TaskTag, Long> {}
+interface TaskTagRepository extends ListCrudRepository<TaskTag, Long> {
+	List<TaskTag> findTaskTagByTagId(Long tagId);
+}
 
 @ResponseStatus(reason = "Task not found", code = HttpStatus.NOT_FOUND)
 class TaskNotFoundException extends RuntimeException {
@@ -264,17 +274,30 @@ class TagService {
 		return Mono.fromCallable(() -> tagRepository.save(tag));
 	}
 
-	public Tag tagById(Long userId, Long tagId) {
-		return tagRepository.findByUserIdAndId(userId,tagId).orElseThrow(TagNotFoundException::new);
+	public Mono<Tag> tagById(Long userId, Long tagId) {
+		return Mono.fromCallable(() -> tagRepository.findByUserIdAndId(userId,tagId).orElseThrow(TagNotFoundException::new));
 	}
 
 	public Mono<Tag> updateTag(Long userId, Long tagId, Tag tag) {
-		return Mono.fromCallable(() -> tagRepository.findByUserIdAndId(userId,tagId).orElseThrow(TagNotFoundException::new))
+		return tagById(userId, tagId)
 				.zipWith(Mono.just(tag),(dbTag, requestTag) -> {
 					if (nonNull(requestTag.getName())) {
 						dbTag.setName(requestTag.getName());
 					}
 					return dbTag;
 				});
+	}
+}
+
+@Service
+@RequiredArgsConstructor
+class TaskTagService {
+	final TaskTagRepository taskTagRepository;
+	final TaskService taskService;
+
+	public Mono<List<Long>> findTagsByTagId(Long userId, Long tagId) {
+		return Mono.fromCallable(() -> taskTagRepository.findTaskTagByTagId(tagId)
+				.stream().map(TaskTag::getTaskId)
+				.collect(ArrayList::new, ArrayList::add, ArrayList::addAll));
 	}
 }

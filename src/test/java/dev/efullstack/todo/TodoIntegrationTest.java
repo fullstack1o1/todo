@@ -116,8 +116,19 @@ public class TodoIntegrationTest {
                                 "description":"Task 1",
                                 "status": "PENDING",
                                 "dueDate":"2021-08-01T00:00:00",
-                                "tags":[{"taskId":null,"tagId":1}]
+                                "tags": [{"taskId":null,"tagId":1}]
                             }
+                        """),
+                //TASK by tagId
+                () -> webTestClient
+                        .get()
+                        .uri("/todo/{userId}/tags/{tagId}/tasks", userId, 1)
+                        .exchange()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody()
+                        .json("""
+                          [1]
                         """),
                 //TASK - PATCH
                 () -> webTestClient
