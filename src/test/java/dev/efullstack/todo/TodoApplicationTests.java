@@ -1,5 +1,12 @@
 package dev.efullstack.todo;
 
+import dev.efullstack.todo.models.Tag;
+import dev.efullstack.todo.models.Task;
+import dev.efullstack.todo.models.TaskTag;
+import dev.efullstack.todo.repositories.TagRepository;
+import dev.efullstack.todo.repositories.TaskRepository;
+import dev.efullstack.todo.repositories.TaskTagRepository;
+import dev.efullstack.todo.repositories.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
