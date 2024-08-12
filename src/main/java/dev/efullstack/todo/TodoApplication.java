@@ -22,13 +22,16 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import static java.util.Objects.nonNull;
-import static org.springframework.util.CollectionUtils.isEmpty;
 
 @SpringBootApplication
 @Slf4j
@@ -295,9 +298,15 @@ class TaskTagService {
 	final TaskTagRepository taskTagRepository;
 	final TaskService taskService;
 
-	public Mono<List<Long>> findTagsByTagId(Long userId, Long tagId) {
+	public Mono<List<Task>> findTagsByTagId(Long userId, Long tagId) {
+		//collect the task ids
+		//call taskService.findByTaskId for each task parallelly and collect the results
 		return Mono.fromCallable(() -> taskTagRepository.findTaskTagByTagId(tagId)
 				.stream().map(TaskTag::getTaskId)
-				.collect(ArrayList::new, ArrayList::add, ArrayList::addAll));
+				.collect(ArrayList::new, ArrayList::add, ArrayList::addAll))
+				.flatMapMany(Flux::fromIterable)
+				.cast(Long.class)
+				.flatMap(taskId -> taskService.findByTaskId(userId, taskId))
+				.collectList();
 	}
 }

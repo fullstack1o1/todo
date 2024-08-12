@@ -128,7 +128,16 @@ public class TodoIntegrationTest {
                         .isOk()
                         .expectBody()
                         .json("""
-                          [1]
+                            [
+                              {
+                                "taskId":1,
+                                "userId":1,
+                                "title":"Buy grocery",
+                                "description":"Task 1",
+                                "status":"PENDING",
+                                "dueDate":"2021-08-01T00:00:00",
+                                "tags":[{"taskId":1,"tagId":1}]}
+                            ]
                         """),
                 //TASK - PATCH
                 () -> webTestClient
