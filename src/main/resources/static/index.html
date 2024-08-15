@@ -15,79 +15,136 @@
 
         input.form__input {
             height: 50px;
+            margin-right: 10px;
         }
 
         button.form__button {
             height: 55px;
         }
 
-        ul li {
-            list-style: none;
-            margin-top: 10px;
-        }
-
-        p.date {
-            text-decoration: underline;
-        }
-
-        small {
+        small.tag {
             border-radius: 10px;
             border: 1px solid blue;
             height: 20px;
+            margin-left: 10px;
         }
 
-        .tag {
+        small.tag:hover {
+            background-color: blue;
+            color: white;
+            cursor: pointer;
+        }
+
+        .todo__item {
+            padding: 20px;
+            font-size: large;
             display: flex;
             flex-direction: row;
-            margin-top: 10px;
         }
-
-        .tag__input {
+        .todo__item div {
             margin-right: 10px;
         }
+        .todo__result {
+            margin-top: 30px;
+        }
 
+        ul li {
+            list-style: none;
+        }
     </style>
 </head>
 <body>
-    <h1>Todo</h1>
-    <hr/>
-
-    <div class="todo__form">
-        <input class="form__input" type="datetime-local">
-        <input class="form__input" type="text">
-        <button class="form__button">Add</button>
-    </div>
-
-    <div class="todo__result">
+    <div id="app">
+        <h1>{{ message }}</h1>
         <hr/>
-        <p class="date">15/08/2024</p>
-        <ul>
-            <li>
-                <input type="checkbox">
-                Todo Text
-                <small>#Shopping</small>
-                <div class="tag">
-                    <input type="text" placeholder="New Tag" class="tag__input">
-                    <select class="tag__input">
-                        <option>--Choose Tag--</option>
-                        <option>Shopping</option>
-                    </select>
-                </div>
-            </li>
-            <li>
-                <input type="checkbox">
-                Todo Text
-                <small>#Shopping</small>
-                <div class="tag">
-                    <input type="text" placeholder="New Tag" class="tag__input">
-                    <select class="tag__input">
-                        <option>--Choose Tag--</option>
-                        <option>Shopping</option>
-                    </select>
-                </div>
-            </li>
-        </ul>
+
+        <div class="todo__form">
+            <form @submit.prevent="">
+                <input class="form__input" type="datetime-local">
+                <input class="form__input" type="text">
+                <button class="form__button">Add</button>
+            </form>
+
+        </div>
+
+        <div class="todo__result">
+            <ul>
+                <li v-for="x in [1]">
+                    <todos></todos>
+                </li>
+            </ul>
+
+        </div>
+
+        <hr/>
+        <footer style="text-align: right; color: gray">
+            <small>@ all right reserved!</small>
+        </footer>
     </div>
 
+    <template id="dateWiseTodo">
+        <p style="font-size: large; text-decoration: underline">00/00/0000</p>
+        <div class="todo__item" v-for="(todo, index) in todos" key="index">
+            <div>
+                <input type="checkbox">
+            </div>
+
+            <div style="display: flex; flex-direction: column">
+                <div>
+                    <span>Todo Text XYZ</span>
+                    <small class="tag">#Shopping</small>
+                </div>
+                <span style="margin-top: 5px;border: 1px solid gray;width: 90px;border-radius: 10px;cursor: pointer" @click="handleTagController(index)">#add-tag</span>
+                <div style="margin-top: 10px;" v-if="tagControl[index]">
+                    <select>
+                        <option value="">--Select Tag--</option>
+                    </select>
+                    <input style="margin-left: 10px;" type="text" placeholder="Add New">
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        const { createApp, ref } = Vue
+
+        //reusable component <blog-post></blog-post>
+        const BlogPost = {
+            props: ['postTitle'],
+            emits: ['updatePost'],
+            template: `
+              <h3>Blog Post {{ postTitle }}</h3>
+            `
+        }
+
+        const todos = {
+            template: '#dateWiseTodo',
+            props: [],
+            emits: [],
+            setup() {
+                const tagControl = ref({})
+                const todos = ref([1,2,3])
+                const handleTagController = (index) => {
+                    tagControl.value[index] = !tagControl.value[index];
+                }
+                return {
+                    tagControl, handleTagController, todos,
+                };
+            }
+        }
+
+        createApp({
+            setup() {
+                const message = ref('Todo!')
+                const userTags = ref([])
+
+                return {
+                    message, userTags
+                }
+            },
+            components: {BlogPost, todos}
+        }).mount('#app')
+    </script>
 </body>
 </html>
