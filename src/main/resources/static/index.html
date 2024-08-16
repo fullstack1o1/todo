@@ -36,7 +36,7 @@
         }
 
         .todo__item {
-            padding: 20px;
+            padding: 10px;
             font-size: large;
             display: flex;
             flex-direction: row;
@@ -51,6 +51,21 @@
         ul li {
             list-style: none;
         }
+        .add__tag__button {
+            margin-top: 5px;
+            border: 1px solid blue;
+            width: 75PX;
+            cursor: pointer; 
+            color: blue; 
+            text-align: center;
+        }
+        
+        .add__tag__button:hover {
+            border: 1px solid black;
+            border-radius: 5px;
+            display: block;
+        }
+
     </style>
 </head>
 <body>
@@ -59,21 +74,20 @@
         <hr/>
 
         <div class="todo__form">
-            <form @submit.prevent="">
-                <input class="form__input" type="datetime-local">
-                <input class="form__input" type="text">
-                <button class="form__button">Add</button>
+            <form @submit.prevent="submitTask">
+                <input class="form__input" type="date" v-model="task.dueDate">
+                <input class="form__input" type="time" v-model="task.time">
+                <input class="form__input" type="text" v-model="task.description">
+                <button class="form__button" :disabled="!task.description || !task.dueDate">Add</button>
             </form>
-
         </div>
 
         <div class="todo__result">
             <ul>
-                <li v-for="x in [1]">
-                    <todos></todos>
+                <li v-for="x in Object.keys(taskGroup)">
+                    <todos :_date=x :data=taskGroup[x]></todos>
                 </li>
             </ul>
-
         </div>
 
         <hr/>
@@ -82,54 +96,48 @@
         </footer>
     </div>
 
-    <template id="dateWiseTodo">
-        <p style="font-size: large; text-decoration: underline">00/00/0000</p>
-        <div class="todo__item" v-for="(todo, index) in todos" key="index">
+    <template id="group_todo">
+        <p style="font-size: large; text-decoration: underline">{{ date }}</p>
+        <div class="todo__item" v-for="(todo, index) in data" :key="index">
             <div>
                 <input type="checkbox">
             </div>
 
             <div style="display: flex; flex-direction: column">
                 <div>
-                    <span>Todo Text XYZ</span>
-                    <small class="tag">#Shopping</small>
+                    <span>{{ todo.description }}</span>
+                    <small class="tag" v-for="(tag,i) in todo.tags" :key="i">{{ tag }}</small>
                 </div>
-                <span style="margin-top: 5px;border: 1px solid gray;width: 90px;border-radius: 10px;cursor: pointer" @click="handleTagController(index)">#add-tag</span>
                 <div style="margin-top: 10px;" v-if="tagControl[index]">
                     <select>
                         <option value="">--Select Tag--</option>
                     </select>
                     <input style="margin-left: 10px;" type="text" placeholder="Add New">
                 </div>
+                <span class="add__tag__button" @click="handleTagController(index)">{{tagControl[index] ? '#save-tag' : '#add-tag'}}</span>
+                
             </div>
         </div>
     </template>
     
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
-        const { createApp, ref } = Vue
+        const { createApp, ref, toRef, onMounted , watch} = Vue
 
-        //reusable component <blog-post></blog-post>
-        const BlogPost = {
-            props: ['postTitle'],
-            emits: ['updatePost'],
-            template: `
-              <h3>Blog Post {{ postTitle }}</h3>
-            `
-        }
-
+        //reusable component
         const todos = {
-            template: '#dateWiseTodo',
-            props: [],
+            template: '#group_todo',
+            props: ['data','_date'],
             emits: [],
-            setup() {
+            setup(props) {
                 const tagControl = ref({})
-                const todos = ref([1,2,3])
+                const date = toRef(props, '_date')
+                const data = toRef(props, 'data')
                 const handleTagController = (index) => {
                     tagControl.value[index] = !tagControl.value[index];
                 }
                 return {
-                    tagControl, handleTagController, todos,
+                    tagControl, handleTagController, date, data
                 };
             }
         }
@@ -137,14 +145,35 @@
         createApp({
             setup() {
                 const message = ref('Todo!')
-                const userTags = ref([])
+                const task = ref({})
+                const tasks = ref([])
+                const taskGroup = ref({})
+                
+                const submitTask = () => {
+                    //console.log(task.value)
+                    tasks.value.push(task.value)
+                    task.value = {}
+                    console.log(tasks.value)
+                }
 
+                onMounted(() => {
+                    console.log(`the component is now mounted.`)
+                })
+                
+                watch(
+                    () => tasks.value.length,
+                    (tasksLength) => {
+                        taskGroup.value = Object.groupBy(tasks.value, ({dueDate}) => dueDate)
+                    }
+                )
+                
                 return {
-                    message, userTags
+                    message, task, submitTask, tasks, taskGroup
                 }
             },
-            components: {BlogPost, todos}
+            components: {todos}
         }).mount('#app')
+
     </script>
 </body>
 </html>

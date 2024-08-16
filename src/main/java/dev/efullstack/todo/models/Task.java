@@ -8,7 +8,9 @@ import org.springframework.data.relational.core.mapping.MappedCollection;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Set;
 
 @Data
@@ -20,8 +22,10 @@ public class Task {
     private String title;
     private String description;
     private Task.TaskStatus status = Task.TaskStatus.PENDING;
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime dueDate;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME, pattern = "yyyy-MM-dd")
+    private LocalDate date;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME, pattern = "HH:mm:ss")
+    private LocalTime time;
     @JsonIgnore
     @ReadOnlyProperty
     private LocalDateTime createdAt;

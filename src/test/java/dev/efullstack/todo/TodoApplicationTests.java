@@ -13,7 +13,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Set;
 
@@ -63,7 +65,8 @@ class TodoApplicationTests {
 					task.setTitle("TITLE");
 					task.setDescription("DESCRIPTION");
 					task.setStatus(Task.TaskStatus.PENDING);
-					task.setDueDate(LocalDateTime.now());
+					task.setDate(LocalDate.now());
+					task.setTime(LocalTime.now());
 
 					task.setTags(
 							Set.of(

@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS tasks (
     title VARCHAR(255) NOT NULL,
     description TEXT,
     status VARCHAR(255), -- DEFAULT 'PENDING',
-    due_date TIMESTAMP,
+    date DATE,
+    time TIME,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_user

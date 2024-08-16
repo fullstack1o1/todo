@@ -19,7 +19,7 @@ public class TaskTagService {
 
     public Mono<List<Task>> findTagsByTagId(Long userId, Long tagId) {
         //collect the task ids
-        //call taskService.findByTaskId for each task parallelly and collect the results
+        //call taskService.findByTaskId for each task parallel and collect the results
         return Mono.fromCallable(() -> taskTagRepository.findTaskTagByTagId(tagId)
                         .stream().map(TaskTag::getTaskId)
                         .collect(ArrayList::new, ArrayList::add, ArrayList::addAll))

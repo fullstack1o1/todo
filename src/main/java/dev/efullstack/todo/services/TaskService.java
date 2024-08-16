@@ -38,8 +38,11 @@ public class TaskService {
                     if (nonNull(requestTask.getStatus())) {
                         dbTask.setStatus(requestTask.getStatus());
                     }
-                    if (nonNull(requestTask.getDueDate())) {
-                        dbTask.setDueDate(requestTask.getDueDate());
+                    if (nonNull(requestTask.getDate())) {
+                        dbTask.setDate(requestTask.getDate());
+                    }
+                    if(nonNull(requestTask.getTime())) {
+                        dbTask.setTime(requestTask.getTime());
                     }
                     if (nonNull(requestTask.getTags())) {
                         dbTask.setTags(requestTask.getTags());

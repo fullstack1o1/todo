@@ -48,9 +48,12 @@ components:
           type: string
         status:
           $ref: '#/components/schemas/TaskStatus'
-        dueDate:
+        date:
           type: string
-          format: date-time
+          format: date
+        time:
+          type: string
+          format: time
         tags:
           type: array
           items:
@@ -68,9 +71,12 @@ components:
           type: string
         status:
           $ref: '#/components/schemas/TaskStatus'
-        dueDate:
+        date:
           type: string
-          format: date-time
+          format: date
+        time:
+          type: string
+          format: time
         tags:
           type: array
           items:

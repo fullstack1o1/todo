@@ -96,7 +96,8 @@ public class TodoIntegrationTest {
                           {
                               "title": "Buy grocery",
                               "description": "Task 1",
-                              "dueDate": "2021-08-01T00:00:00",
+                              "date": "2021-08-01",
+                              "time": "00:00:15",
                               "tags": [
                                 {
                                     "tagId": 1
@@ -115,7 +116,8 @@ public class TodoIntegrationTest {
                                 "title":"Buy grocery",
                                 "description":"Task 1",
                                 "status": "PENDING",
-                                "dueDate":"2021-08-01T00:00:00",
+                                "date":"2021-08-01",
+                                "time": "00:00:15",
                                 "tags": [{"taskId":null,"tagId":1}]
                             }
                         """),
@@ -135,7 +137,8 @@ public class TodoIntegrationTest {
                                 "title":"Buy grocery",
                                 "description":"Task 1",
                                 "status":"PENDING",
-                                "dueDate":"2021-08-01T00:00:00",
+                                "date":"2021-08-01",
+                                "time": "00:00:15",
                                 "tags":[{"taskId":1,"tagId":1}]}
                             ]
                         """),
@@ -161,7 +164,8 @@ public class TodoIntegrationTest {
                                 "title":"Buy Grocery",
                                 "description":"Task 1",
                                 "status": "PENDING",
-                                "dueDate":"2021-08-01T00:00:00",
+                                "date":"2021-08-01",
+                                "time": "00:00:15",
                                 "tags":[]
                             }
                         """),
@@ -196,7 +200,8 @@ public class TodoIntegrationTest {
                                 "title":"Buy Grocery",
                                 "description":"Task 1",
                                 "status":"PENDING",
-                                "dueDate":"2021-08-01T00:00:00",
+                                "date":"2021-08-01",
+                                "time": "00:00:15",
                                 "tags":[]
                             }
                          """),
@@ -216,7 +221,8 @@ public class TodoIntegrationTest {
                                 "title":"Buy Grocery",
                                 "description":"Task 1",
                                 "status":"PENDING",
-                                "dueDate":"2021-08-01T00:00:00",
+                                "date":"2021-08-01",
+                                "time": "00:00:15",
                                 "tags":[]
                             }
                           ]
