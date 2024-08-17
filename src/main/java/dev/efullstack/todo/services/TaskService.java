@@ -5,6 +5,7 @@ import dev.efullstack.todo.models.Task;
 import dev.efullstack.todo.repositories.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -52,7 +53,7 @@ public class TaskService {
                 .map(taskRepository::save);
     }
 
-    public List<Task> allTask(Long userId) {
-        return taskRepository.findTasksByUserId(userId);
+    public Mono<List<Task>> allTasks(Long userId) {
+        return Mono.fromCallable(() -> taskRepository.findTasksByUserId(userId));
     }
 }

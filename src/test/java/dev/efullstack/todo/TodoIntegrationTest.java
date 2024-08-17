@@ -139,7 +139,8 @@ public class TodoIntegrationTest {
                                 "status":"PENDING",
                                 "date":"2021-08-01",
                                 "time": "00:00:15",
-                                "tags":[{"taskId":1,"tagId":1}]}
+                                "tags":[{"taskId":1,"tagId":1}]
+                              }
                             ]
                         """),
                 //TASK - PATCH

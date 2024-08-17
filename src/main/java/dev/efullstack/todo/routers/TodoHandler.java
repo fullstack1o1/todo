@@ -6,6 +6,7 @@ import dev.efullstack.todo.services.TagService;
 import dev.efullstack.todo.services.TaskService;
 import dev.efullstack.todo.services.TaskTagService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -13,6 +14,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class TodoHandler {
     final TaskService taskService;
     final TagService tagService;
@@ -22,6 +24,7 @@ public class TodoHandler {
         var userId = Long.valueOf(request.pathVariable("userId"));
         return request
                 .bodyToMono(Task.class)
+                .doOnNext(task -> log.info("Task: {}", task))
                 .flatMap(task -> taskService.newTask(userId, task))
                 .flatMap(ServerResponse.ok()::bodyValue);
     }
@@ -45,7 +48,8 @@ public class TodoHandler {
 
     public Mono<ServerResponse> tasks(ServerRequest request) {
         var userId = Long.valueOf(request.pathVariable("userId"));
-        return ServerResponse.ok().bodyValue(taskService.allTask(userId));
+        return taskService.allTasks(userId)
+                .flatMap(ServerResponse.ok()::bodyValue);
     }
 
     public Mono<ServerResponse> tagById(ServerRequest request) {
@@ -76,6 +80,12 @@ public class TodoHandler {
         var tagId = Long.valueOf(request.pathVariable("tagId"));
 
         return taskTagService.findTagsByTagId(userId, tagId)
+                .flatMap(ServerResponse.ok()::bodyValue);
+    }
+
+    public Mono<ServerResponse> tags(ServerRequest request) {
+        var userId = Long.valueOf(request.pathVariable("userId"));
+        return tagService.allTag(userId)
                 .flatMap(ServerResponse.ok()::bodyValue);
     }
 }

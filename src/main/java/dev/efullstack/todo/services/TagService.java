@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 import static java.util.Objects.nonNull;
 
 @Service
@@ -32,5 +34,9 @@ public class TagService {
                     }
                     return dbTag;
                 });
+    }
+
+    public Mono<List<Tag>> allTag(Long userId) {
+        return Mono.fromCallable(() -> tagRepository.findAllByUserId(userId));
     }
 }

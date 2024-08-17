@@ -75,17 +75,17 @@
 
         <div class="todo__form">
             <form @submit.prevent="submitTask">
-                <input class="form__input" type="date" v-model="task.dueDate">
+                <input class="form__input" type="date" v-model="task.date">
                 <input class="form__input" type="time" v-model="task.time">
-                <input class="form__input" type="text" v-model="task.description">
-                <button class="form__button" :disabled="!task.description || !task.dueDate">Add</button>
+                <input class="form__input" type="text" v-model="task.title">
+                <button class="form__button" :disabled="!task.title || !task.date">Add</button>
             </form>
         </div>
 
         <div class="todo__result">
             <ul>
                 <li v-for="x in Object.keys(taskGroup)">
-                    <todos :_date=x :data=taskGroup[x]></todos>
+                    <todos :_date=x :data=taskGroup[x] :user_tags="userTags"></todos>
                 </li>
             </ul>
         </div>
@@ -104,16 +104,20 @@
             </div>
 
             <div style="display: flex; flex-direction: column">
+                
                 <div>
-                    <span>{{ todo.description }}</span>
-                    <small class="tag" v-for="(tag,i) in todo.tags" :key="i">{{ tag }}</small>
+                    <span>{{ todo.title }}</span>
+                    <small class="tag" v-for="t in todo.tags" @click="() => alert(t.tagId)">{{ t.tagId }}</small>
                 </div>
+                
                 <div style="margin-top: 10px;" v-if="tagControl[index]">
                     <select>
                         <option value="">--Select Tag--</option>
+                        <option :value="user_tag.tagId" v-for="user_tag in user_tags">{{ user_tag.name }}</option>
                     </select>
                     <input style="margin-left: 10px;" type="text" placeholder="Add New">
                 </div>
+                
                 <span class="add__tag__button" @click="handleTagController(index)">{{tagControl[index] ? '#save-tag' : '#add-tag'}}</span>
                 
             </div>
@@ -123,21 +127,24 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
         const { createApp, ref, toRef, onMounted , watch} = Vue
+        const userId = 1;
+        const apiHost = "http://localhost:8080"
 
         //reusable component
         const todos = {
             template: '#group_todo',
-            props: ['data','_date'],
-            emits: [],
+            props: ['data','_date', 'user_tags'],
+            emits: ['add_new_tag', 'add_tag_to_task'],
             setup(props) {
                 const tagControl = ref({})
                 const date = toRef(props, '_date')
                 const data = toRef(props, 'data')
+                const user_tags = toRef(props, 'user_tags')
                 const handleTagController = (index) => {
                     tagControl.value[index] = !tagControl.value[index];
                 }
                 return {
-                    tagControl, handleTagController, date, data
+                    tagControl, handleTagController, date, data, user_tags
                 };
             }
         }
@@ -145,30 +152,77 @@
         createApp({
             setup() {
                 const message = ref('Todo!')
-                const task = ref({})
+                const task = ref({
+                    date: null,
+                    time: null,
+                    title: '',
+                })
                 const tasks = ref([])
                 const taskGroup = ref({})
+                const userTags = ref([])
                 
+                const saveTask = (task) => {
+                  fetch(`${apiHost}/todo/${userId}/tasks`,{
+                    method: 'POST',
+                    headers : {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(task)
+                  })
+                    .then(response => {
+                        if(!response.ok)
+                            throw new Error("Error While saving")
+                        return response.json()
+                    })
+                    .then(data => allTask())
+                    .catch(e => console.log(e))
+                }
+
+                const allTask = () => {
+                    fetch(`${apiHost}/todo/${userId}/tasks`)
+                        .then(response => {
+                            if(!response.ok)
+                                throw new Error("Error While fetching")
+                            return response.json()
+                        })
+                        .then(data => tasks.value = data)
+                }
+
+                const allTags = () => {
+                    fetch(`${apiHost}/todo/${userId}/tags`)
+                        .then(response => {
+                            if(!response.ok)
+                                throw new Error("Error While fetching")
+                            return response.json()
+                        })
+                        .then(data => userTags.value = data)
+                }
+
                 const submitTask = () => {
-                    //console.log(task.value)
-                    tasks.value.push(task.value)
-                    task.value = {}
-                    console.log(tasks.value)
+                    console.log(task.value)
+                    saveTask(task.value)
+                    task.value = {
+                        date: null,
+                        time: null,
+                        title: '',
+                    }
                 }
 
                 onMounted(() => {
                     console.log(`the component is now mounted.`)
+                    allTask()
+                    allTags()
                 })
                 
                 watch(
                     () => tasks.value.length,
                     (tasksLength) => {
-                        taskGroup.value = Object.groupBy(tasks.value, ({dueDate}) => dueDate)
+                        taskGroup.value = Object.groupBy(tasks.value, ({date}) => date)
                     }
                 )
                 
                 return {
-                    message, task, submitTask, tasks, taskGroup
+                    message, task, submitTask, tasks, taskGroup, userTags
                 }
             },
             components: {todos}
