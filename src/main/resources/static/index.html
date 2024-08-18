@@ -13,6 +13,10 @@
             width: 50%;
         }
 
+        .todo__form {
+            text-align: center;
+        }
+
         input.form__input {
             height: 50px;
             margin-right: 10px;
@@ -41,6 +45,18 @@
             display: flex;
             flex-direction: row;
         }
+
+        .todo__item:hover {
+            border-top: 1px solid gray;
+            border-bottom: 1px solid gray;
+            background-color: beige;
+        }
+
+        .todo__item__menu {
+            margin-left: 30px;
+            color: gray;
+        }
+
         .todo__item div {
             margin-right: 10px;
         }
@@ -54,16 +70,23 @@
         .add__tag__button {
             margin-top: 5px;
             border: 1px solid blue;
-            width: 75PX;
+            width: 75px;
             cursor: pointer; 
             color: blue; 
             text-align: center;
-        }
-        
-        .add__tag__button:hover {
-            border: 1px solid black;
-            border-radius: 5px;
             display: block;
+            border-radius: 5px;
+        }
+
+        .tag {
+            margin: 10px;
+        }
+
+        .clear_filter {
+            text-align: right;
+            color: blue;
+            text-decoration: underline;
+            cursor: pointer;
         }
 
     </style>
@@ -83,42 +106,64 @@
         </div>
 
         <div class="todo__result">
+            <p class="clear_filter" v-if="clearFilter" @click="reloadTasks">Clear Filter</p>
             <ul>
                 <li v-for="x in Object.keys(taskGroup)">
-                    <todos :_date=x :data=taskGroup[x] :user_tags="userTags" @add_tag_to_task="(taskId, tagId) => console.log(`${taskId}-${tagId} add_tag_to_task`)"></todos>
+                    <todos 
+                        :_date=x :data=taskGroup[x] 
+                        :user_tags="userTags" 
+                        @filter_by_tag="(tagId) => displayAllByTag(tagId)"
+                        @task_update="reloadTasks">
+                    </todos>
                 </li>
             </ul>
         </div>
 
         <hr/>
-        <footer style="text-align: right; color: gray">
+        <footer style="text-align: right; color: gray;">
             <small>@ all right reserved!</small>
         </footer>
     </div>
 
     <template id="group_todo">
         <p style="font-size: large; text-decoration: underline">{{ date }}</p>
-        <div class="todo__item" v-for="(todo, index) in data" :key="index">
+        <div class="todo__item" 
+            v-for="(todo, index) in data" :key="index" 
+            @mouseover="() => hoverMenu[index] = true"
+            @mouseleave="() => hoverMenu[index] = false">
             <div>
                 <input type="checkbox">
             </div>
-
+            <div>
+                
+            </div>
             <div style="display: flex; flex-direction: column">
                 
                 <div>
                     <span>{{ todo.title }}</span>
-                    <small class="tag" v-for="t in todo.tags" @click="() => alert(t.tagId)">{{ t.tagId }}</small>
+                    <small class="tag" v-for="t in todo.tags" @click="filterByTag(t.tagId)">#{{ fetchTagName(t.tagId) }}</small>
+                    <small v-if="todo.time">scheduled at : {{ todo.time }}</small>
+                    <span class="todo__item__menu" v-if="hoverMenu[index]">menu</span>
                 </div>
                 
                 <div style="margin-top: 10px;" v-if="tagControl[index]">
                     <select v-model="selectedTag">
-                        <option value="">--Select Tag--</option>
-                        <option :value="userTag.id" v-for="userTag in userTags">{{ userTag.name }}</option>
+                        <option value="" disabled>--Select Tag--</option>
+                        <optgroup label="New">
+                            <option value='NEW'>Create New</option>
+                        </optgroup>
+                        <optgroup label="Availble">
+                            <option :value="userTag.id" v-for="userTag in userTags">{{ userTag.name }}</option>
+                        </optgroup>
                     </select>
-                    <input style="margin-left: 10px;" type="text" placeholder="Add New Tag">
+                    <template v-if="newTag" >
+                        <input style="margin-left: 10px;" type="text" placeholder="Add New Tag" v-model="newTagValue">
+                        <button style="margin-left: 5px;" :disabled="!newTagValue">Ok</button>
+                    </template>
                 </div>
-                
-                <span class="add__tag__button" @click="handleTagController(index, todo.taskId)">{{tagControl[index] ? '#save' : '#add-tag'}}</span>
+                <div>
+                    <span class="add__tag__button" @click="handleTagController(index, todo.taskId)" @click="() => console.log('CLICKED')">{{tagControl[index] ? '#save' : '#tag'}}</span>
+                </div>
                 
             </div>
         </div>
@@ -134,20 +179,73 @@
         const todos = {
             template: '#group_todo',
             props: ['data','_date', 'user_tags'],
-            emits: ['add_new_tag', 'add_tag_to_task'],
+            emits: ['filter_by_tag', 'task_update'],
             setup(props, { emit }) {
                 const tagControl = ref({})
+                const hoverMenu = ref({})
                 const date = toRef(props, '_date')
                 const data = toRef(props, 'data')
                 const userTags = toRef(props, 'user_tags')
-                const selectedTag = ref(null)
+                const selectedTag = ref('')
+                const newTag = ref(false)
+                const newTagValue = ref('')
+                
                 const handleTagController = (index, taskId) => {
                     tagControl.value[index] = !tagControl.value[index];
-                    if (!tagControl.value[index])
-                        emit('add_tag_to_task', taskId, selectedTag.value)
+                    if (!tagControl.value[index] && selectedTag.value && selectedTag.value !== 'NEW') {
+                        const task = {
+                            tags : [
+                                { tagId : selectedTag.value }
+                            ]
+                        }
+                        patchTask(taskId, task)
+                        selectedTag.value = ''
+                    }
                 }
+                
+                const filterByTag = (tagId) => {
+                    emit('filter_by_tag', tagId)
+                }
+
+                const patchTask = (taskId, patchObject) => {
+                    fetch(`${apiHost}/todo/${userId}/tasks/${taskId}`, {
+                        method: 'PATCH',
+                        headers : {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(patchObject)
+                    })
+                    .then(response => {
+                        if(!response.ok)
+                            throw new Error("Error While updating")
+                        return response.json()
+                    })
+                    .then(data => emit('task_update'))
+                    .catch(e => console.log(e))
+                }
+
+                const fetchTagName = (tagId) => {
+                    // fetch(`${apiHost}/todo/${userId}/tags/${tagId}`)
+                    //     .then(response => {
+                    //         if(!response.ok)
+                    //             throw new Error("Error While updating")
+                    //         return response.json()
+                    //     })
+                    //     .then(data => data.name)
+                    return `${tagId}`
+                }
+
+                watch(
+                    () => selectedTag.value,
+                    (whatSelected) => {
+                        if(whatSelected === 'NEW') {
+                            newTag.value = true
+                        }
+                    }
+                )
+                
                 return {
-                    tagControl, handleTagController, date, data, userTags, selectedTag
+                    tagControl, handleTagController, date, data, userTags, selectedTag, filterByTag, newTag, newTagValue, hoverMenu, fetchTagName
                 };
             }
         }
@@ -163,7 +261,8 @@
                 const tasks = ref([])
                 const taskGroup = ref({})
                 const userTags = ref([])
-                
+                const clearFilter = ref(false)
+
                 const saveTask = (task) => {
                   fetch(`${apiHost}/todo/${userId}/tasks`,{
                     method: 'POST',
@@ -210,6 +309,23 @@
                         title: '',
                     }
                 }
+                
+                const reloadTasks = () => {
+                    console.log('reload')
+                    allTask()
+                    clearFilter.value = false
+                }
+
+                const displayAllByTag = (tagId) => {
+                    fetch(`${apiHost}/todo/${userId}/tags/${tagId}/tasks`)
+                        .then(response => {
+                            if(!response.ok)
+                                throw new Error("Error While fetching")
+                            return response.json()
+                        })
+                        .then(data => tasks.value = data)
+                        .then(data => clearFilter.value = true)
+                }
 
                 onMounted(() => {
                     console.log(`the component is now mounted.`)
@@ -221,11 +337,12 @@
                     () => tasks.value.length,
                     (tasksLength) => {
                         taskGroup.value = Object.groupBy(tasks.value, ({date}) => date)
-                    }
+                    },
+                    { deep: true }
                 )
                 
                 return {
-                    message, task, submitTask, tasks, taskGroup, userTags
+                    message, task, submitTask, tasks, taskGroup, userTags, reloadTasks, displayAllByTag, clearFilter
                 }
             },
             components: {todos}
