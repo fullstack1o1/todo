@@ -85,7 +85,7 @@
         <div class="todo__result">
             <ul>
                 <li v-for="x in Object.keys(taskGroup)">
-                    <todos :_date=x :data=taskGroup[x] :user_tags="userTags"></todos>
+                    <todos :_date=x :data=taskGroup[x] :user_tags="userTags" @add_tag_to_task="(taskId, tagId) => console.log(`${taskId}-${tagId} add_tag_to_task`)"></todos>
                 </li>
             </ul>
         </div>
@@ -111,14 +111,14 @@
                 </div>
                 
                 <div style="margin-top: 10px;" v-if="tagControl[index]">
-                    <select>
+                    <select v-model="selectedTag">
                         <option value="">--Select Tag--</option>
-                        <option :value="user_tag.tagId" v-for="user_tag in user_tags">{{ user_tag.name }}</option>
+                        <option :value="userTag.id" v-for="userTag in userTags">{{ userTag.name }}</option>
                     </select>
-                    <input style="margin-left: 10px;" type="text" placeholder="Add New">
+                    <input style="margin-left: 10px;" type="text" placeholder="Add New Tag">
                 </div>
                 
-                <span class="add__tag__button" @click="handleTagController(index)">{{tagControl[index] ? '#save-tag' : '#add-tag'}}</span>
+                <span class="add__tag__button" @click="handleTagController(index, todo.taskId)">{{tagControl[index] ? '#save' : '#add-tag'}}</span>
                 
             </div>
         </div>
@@ -135,16 +135,19 @@
             template: '#group_todo',
             props: ['data','_date', 'user_tags'],
             emits: ['add_new_tag', 'add_tag_to_task'],
-            setup(props) {
+            setup(props, { emit }) {
                 const tagControl = ref({})
                 const date = toRef(props, '_date')
                 const data = toRef(props, 'data')
-                const user_tags = toRef(props, 'user_tags')
-                const handleTagController = (index) => {
+                const userTags = toRef(props, 'user_tags')
+                const selectedTag = ref(null)
+                const handleTagController = (index, taskId) => {
                     tagControl.value[index] = !tagControl.value[index];
+                    if (!tagControl.value[index])
+                        emit('add_tag_to_task', taskId, selectedTag.value)
                 }
                 return {
-                    tagControl, handleTagController, date, data, user_tags
+                    tagControl, handleTagController, date, data, userTags, selectedTag
                 };
             }
         }

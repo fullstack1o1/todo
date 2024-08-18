@@ -1,7 +1,9 @@
 package dev.efullstack.todo.services;
 
 import dev.efullstack.todo.TaskNotFoundException;
+import dev.efullstack.todo.models.Tag;
 import dev.efullstack.todo.models.Task;
+import dev.efullstack.todo.models.TaskTag;
 import dev.efullstack.todo.repositories.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -9,6 +11,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
 
