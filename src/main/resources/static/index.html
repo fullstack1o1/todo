@@ -54,7 +54,7 @@
 
         .todo__item__menu {
             margin-left: 30px;
-            color: gray;
+            cursor: pointer;
         }
 
         .todo__item div {
@@ -141,9 +141,9 @@
                 
                 <div>
                     <span>{{ todo.title }}</span>
-                    <small class="tag" v-for="t in todo.tags" @click="filterByTag(t.tagId)">#{{ fetchTagName(t.tagId) }}</small>
+                    <small class="tag" v-for="t in todo.tags" @click="filterByTag(t.tagId)">#{{ userTags.filter(uT => uT.id === t.tagId).map(fuT => fuT.name)[0] }}</small>
                     <small v-if="todo.time">scheduled at : {{ todo.time }}</small>
-                    <span class="todo__item__menu" v-if="hoverMenu[index]">menu</span>
+                    <i class="todo__item__menu fa-solid fa-tag fa-lg" v-if="hoverMenu[index]"></i>
                 </div>
                 
                 <div style="margin-top: 10px;" v-if="tagControl[index]">
@@ -169,6 +169,7 @@
         </div>
     </template>
     
+    <script src="https://kit.fontawesome.com/6f6c4baace.js" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
         const { createApp, ref, toRef, onMounted , watch} = Vue
@@ -225,14 +226,14 @@
                 }
 
                 const fetchTagName = (tagId) => {
-                    // fetch(`${apiHost}/todo/${userId}/tags/${tagId}`)
-                    //     .then(response => {
-                    //         if(!response.ok)
-                    //             throw new Error("Error While updating")
-                    //         return response.json()
-                    //     })
-                    //     .then(data => data.name)
-                    return `${tagId}`
+                    return fetch(`${apiHost}/todo/${userId}/tags/${tagId}`)
+                        .then(response => {
+                            if(!response.ok)
+                                throw new Error("Error While updating")
+                            return response.json()
+                        })
+                        .then(data => data.name)
+                    //return `${tagId}`
                 }
 
                 watch(

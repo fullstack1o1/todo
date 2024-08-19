@@ -15,6 +15,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 @SpringBootTest
 @AutoConfigureWebTestClient
 public class TodoIntegrationTest {
+
     @Autowired
     private WebTestClient webTestClient;
 
