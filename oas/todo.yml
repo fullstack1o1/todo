@@ -81,19 +81,16 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TagReference'
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
       required:
         - title
-        - status
+        - date
     
     TagReference:
       type: object
       properties:
+        taskId:
+          type: integer
+          format: int64
         tagId:
           type: integer
           format: int64
