@@ -88,4 +88,11 @@ public class TodoHandler {
         return tagService.allTag(userId)
                 .flatMap(ServerResponse.ok()::bodyValue);
     }
+
+    public Mono<ServerResponse> deleteTask(ServerRequest request) {
+        var userId = Long.valueOf(request.pathVariable("userId"));
+        var taskId = Long.valueOf(request.pathVariable("taskId"));
+        return taskService.deleteTask(userId, taskId)
+                .then(ServerResponse.ok().build());
+    }
 }

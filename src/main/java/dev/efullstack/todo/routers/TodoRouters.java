@@ -23,7 +23,7 @@ public class TodoRouters {
                         .GET("/tasks/{taskId}", todoHandler::findTaskById)
                         .GET("/tasks", todoHandler::tasks)
                         .PATCH("/tasks/{taskId}", todoHandler::updateTask)
-                        .DELETE("/tasks/{taskId}", request -> ServerResponse.noContent().build())
+                        .DELETE("/tasks/{taskId}", todoHandler::deleteTask)
                         .POST("/tags", todoHandler::newTags)
                         .GET("/tags/{tagId}", todoHandler::tagById)
                         .GET("/tags/{tagId}/tasks", todoHandler::tasksByTagId)

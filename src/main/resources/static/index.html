@@ -122,7 +122,7 @@
             </form>
         </div>
 
-        <div class="todo__result">
+        <div class="todo__result" v-if="taskGroup">
             <p class="clear_filter" v-if="clearFilter" @click="reloadTasks">Clear Filter</p>
             <ul>
                 <li v-for="x in Object.keys(taskGroup)">
@@ -135,7 +135,7 @@
                 </li>
             </ul>
         </div>
-
+        <p v-else>No task found!</p>
         <hr/>
         <footer style="text-align: right; color: gray;">
             <small>@ all right reserved!</small>
@@ -157,11 +157,24 @@
             <div style="display: flex; flex-direction: column">
                 
                 <div>
+                    <input type="date" :value="todo.date" v-if="false">
+                    
                     <span>{{ todo.title }}</span>
+                    <input type="text" :value="todo.title" v-if="false">
+                    
                     <small class="tag" v-for="t in todo.tags" @click="filterByTag(t.tagId)">#{{ userTags.filter(uT => uT.id === t.tagId).map(fuT => fuT.name)[0] }}</small>
-                    <small v-if="todo.time">scheduled at : {{ todo.time }}</small>
+                    <div style="display: flex; flex-direction: row;" v-if="false">
+                        <div v-for="t in todo.tags">
+                            {{t.tagId}}
+                            <span>x</span>
+                        </div>
+                    </div>
+                    
+                    <small v-if="todo.time">|scheduled at : {{ todo.time }}|</small>
+                    <input type="time" :value="todo.time" v-if="false">
+
                     <i class="todo__item__menu fa-solid fa-tag fa-sm" v-if="hoverMenu[index] && !tagControl[index]" @click="handleTagController(index)"></i>
-                    <i class="todo__item__menu fa-solid fa-trash fa-sm" v-if="hoverMenu[index]"></i>
+                    <i class="todo__item__menu fa-solid fa-trash fa-sm" v-if="hoverMenu[index]" @click="deleteTask(todo.taskId)"></i>
                 </div>
                 
                 <div style="margin-top: 10px;" v-if="tagControl[index]">
@@ -178,7 +191,7 @@
                         <input style="margin-left: 10px;" type="text" placeholder="Add New Tag" v-model="newTagValue">
                         <button style="margin-left: 5px;" :disabled="!newTagValue" @click="addNewTag">Ok</button>
                     </template>
-                    <i class="todo__item__menu fa-solid fa-floppy-disk fa-lg" v-if="tagControl[index]" @click="handleTagController(index)"></i>
+                    <i class="todo__item__menu fa-solid fa-close fa-lg" v-if="tagControl[index]" @click="handleTagController(index)"></i>
                 </div>
                 
             </div>
@@ -235,6 +248,7 @@
                     .then(data => {
                         newTag.value = false
                         newTagValue.value = ''
+                        selectedTag.value = ''
                         userTags.value.push(data)
                     })
                     .catch(e => console.log(e))
@@ -276,6 +290,15 @@
                     //return `${tagId}`
                 }
 
+                const deleteTask = (taskId) => {
+                    fetch(`${apiHost}/todo/${userId}/tasks/${taskId}`, {
+                        method: 'DELETE'
+                    })
+                    .then(data => emit('task_update'))
+                    .catch(e => console.log(e))
+
+                }
+
                 watch(
                     () => selectedTag.value,
                     (whatSelected) => {
@@ -288,7 +311,10 @@
                 )
                 
                 return {
-                    tagControl, handleTagController, date, data, userTags, selectedTag, filterByTag, newTag, newTagValue, hoverMenu, fetchTagName, tagTask, addNewTag
+                    tagControl, handleTagController, date, 
+                        data, userTags, selectedTag, filterByTag, newTag, 
+                            newTagValue, hoverMenu, fetchTagName, tagTask, addNewTag,
+                                deleteTask
                 };
             }
         }
@@ -354,7 +380,6 @@
                 }
                 
                 const reloadTasks = () => {
-                    console.log('reload')
                     allTask()
                     clearFilter.value = false
                 }

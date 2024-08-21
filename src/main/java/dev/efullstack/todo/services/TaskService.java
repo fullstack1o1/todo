@@ -59,4 +59,8 @@ public class TaskService {
     public Mono<List<Task>> allTasks(Long userId) {
         return Mono.fromCallable(() -> taskRepository.findTasksByUserId(userId));
     }
+
+    public Mono<Void> deleteTask(Long userId, Long taskId) {
+        return Mono.fromRunnable(() -> taskRepository.deleteById(taskId));
+    }
 }

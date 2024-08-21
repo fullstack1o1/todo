@@ -4,7 +4,7 @@ info:
   description: API for managing users, tasks, and tags in a ToDo application
   version: 1.0.0
 servers:
-  - url: http://localhost:8080/api
+  - url: http://localhost:8080/todo
 
 components:
   schemas:
@@ -60,7 +60,8 @@ components:
             $ref: '#/components/schemas/TagReference'
       required:
         - title
-        - status
+        - date
+        - tags
     
     TaskRequest:
       type: object
