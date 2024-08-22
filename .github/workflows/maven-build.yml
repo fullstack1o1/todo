@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    uses: samitkumarpatel/github-reusable-pipeline/.github/workflows/springboot.yaml@main
+    uses: samitkumarpatel/github-reusable-pipeline/.github/workflows/springboot.yml@main
     secrets: inherit
     with:
       build-jar: true
