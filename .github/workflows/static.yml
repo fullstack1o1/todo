@@ -1,4 +1,5 @@
 name: OAS deployment
+run-name: OAS deployment
 on:
   push:
     branches: ["main"]
