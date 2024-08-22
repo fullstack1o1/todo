@@ -15,7 +15,7 @@ class TestcontainersConfiguration {
 		return new PostgreSQLContainer<>(DockerImageName.parse("postgres:latest"))
 				.withUsername("test")
 				.withPassword("test")
-				.withInitScript("db/schema.sql");
+				.withInitScript("db/migration/V1__schema.sql");
 	}
 
 }

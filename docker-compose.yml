@@ -8,10 +8,10 @@ services:
     ports:
       - '5432:5432'
 #    volumes:
-#      - ./src/main/resources/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+#      - ./src/main/resources/db/V1__schema.sql:/docker-entrypoint-initdb.d/V1__schema.sql
 
   todo:
-    image: ghcr.io/samitkumarpatel/todo:220820242049
+    image: ghcr.io/samitkumarpatel/todo:220820242100
     restart: on-failure
     depends_on:
       db:
