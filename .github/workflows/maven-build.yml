@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches: [ main ]
+    paths-ignore:
+      - oas
 
 permissions:
   contents: write
@@ -15,6 +17,6 @@ jobs:
     uses: samitkumarpatel/github-reusable-pipeline/.github/workflows/springboot.yml@main
     secrets: inherit
     with:
-      build-jar: true
+      build-jar: false
       build-image: true
       native-image: false

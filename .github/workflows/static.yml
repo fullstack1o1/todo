@@ -3,6 +3,8 @@ run-name: OAS deployment
 on:
   push:
     branches: ["main"]
+    paths:
+      - oas
 
   workflow_dispatch:
 
