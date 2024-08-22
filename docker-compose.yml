@@ -11,7 +11,7 @@ services:
 #      - ./src/main/resources/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
 
   todo:
-    image: ghcr.io/samitkumarpatel/todo:220820242018
+    image: ghcr.io/samitkumarpatel/todo:220820242049
     restart: on-failure
     depends_on:
       db:
