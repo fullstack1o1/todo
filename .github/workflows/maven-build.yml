@@ -15,6 +15,6 @@ jobs:
     uses: samitkumarpatel/github-reusable-pipeline/.github/workflows/springboot.yml@main
     secrets: inherit
     with:
-      build-jar: false
+      build-jar: true
       build-image: true
       native-image: false
