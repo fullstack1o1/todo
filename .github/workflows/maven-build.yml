@@ -5,6 +5,10 @@ on:
   push:
     branches: [ main ]
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build:
     uses: samitkumarpatel/github-reusable-pipeline/.github/workflows/springboot.yml@main
@@ -12,4 +16,4 @@ jobs:
     with:
       build-jar: true
       build-image: true
-      native-image: true
+      native-image: false
