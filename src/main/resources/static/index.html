@@ -5,103 +5,9 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="style.css">
+
     <title>Todo</title>
-    <style>
-        body {
-            margin-left: auto;
-            margin-right: auto;
-            width: 50%;
-        }
-
-        .todo__form {
-            text-align: center;
-            /*resposibe design*/
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            align-items: center;
-        }
-
-        input.form__input {
-            height: 50px;
-            margin-right: 10px;
-        }
-
-        button.form__button {
-            height: 55px;
-        }
-
-        small.tag {
-            border-radius: 10px;
-            border: 1px solid blue;
-            height: 20px;
-            margin-left: 10px;
-        }
-
-        small.tag:hover {
-            background-color: blue;
-            color: white;
-            cursor: pointer;
-        }
-
-        .todo__item {
-            padding: 10px;
-            font-size: large;
-            display: flex;
-            flex-direction: row;
-        }
-
-        .todo__item:hover {
-            border-top: 1px solid gray;
-            border-bottom: 1px solid gray;
-            background-color: beige;
-        }
-
-        .todo__item__menu {
-            margin-left: 20px;
-            cursor: pointer;
-        }
-
-        .todo__item__menu:hover {
-            color: blue;
-            border-bottom: 1px solid blue;
-            width: 30px;
-            height: 15px;
-        }
-
-        .todo__item div {
-            margin-right: 10px;
-        }
-        .todo__result {
-            margin-top: 30px;
-        }
-
-        ul li {
-            list-style: none;
-        }
-        .add__tag__button {
-            margin-top: 5px;
-            border: 1px solid blue;
-            width: 75px;
-            cursor: pointer; 
-            color: blue; 
-            text-align: center;
-            display: block;
-            border-radius: 5px;
-        }
-
-        .tag {
-            margin: 10px;
-        }
-
-        .clear_filter {
-            text-align: right;
-            color: blue;
-            text-decoration: underline;
-            cursor: pointer;
-        }
-
-    </style>
 </head>
 <body>
     <div id="app">
@@ -112,6 +18,11 @@
                 <span style="position: absolute; top: -10px; right: -10px; background-color: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px;">0</span>
             </div>
         </div>
+
+        <div class="error" v-if="errors.length > 0">
+            <div v-for="e in errors">{{ e }}</div>
+        </div>
+
         <hr/>
         <div class="todo__form">
             <form @submit.prevent="submitTask">
@@ -121,8 +32,8 @@
                 <button class="form__button" :disabled="!task.title || !task.date">Add</button>
             </form>
         </div>
-
-        <div class="todo__result" v-if="taskGroup">
+        
+        <div class="todo__result" v-if="Object.keys(taskGroup).length > 0">
             <p class="clear_filter" v-if="clearFilter" @click="reloadTasks">Clear Filter</p>
             <ul>
                 <li v-for="x in Object.keys(taskGroup)">
@@ -130,13 +41,15 @@
                         :_date=x :data=taskGroup[x] 
                         :user_tags="userTags" 
                         @filter_by_tag="(tagId) => displayAllByTag(tagId)"
-                        @task_update="reloadTasks">
+                        @task_update="reloadTasks"
+                        @errors="(e) => errors.push(e)">
                     </todos>
                 </li>
             </ul>
         </div>
         <p v-else>No task found!</p>
         <hr/>
+        
         <footer style="text-align: right; color: gray;">
             <small>@ all right reserved!</small>
         </footer>
@@ -148,35 +61,47 @@
             v-for="(todo, index) in data" :key="index" 
             @mouseover="() => hoverMenu[index] = true"
             @mouseleave="() => hoverMenu[index] = false">
-            <div>
-                <input type="checkbox">
-            </div>
-            <div>
-                
-            </div>
-            <div style="display: flex; flex-direction: column">
-                
+            
+            <div style="display: flex; flex-direction: column; row-gap: 10px;">
                 <div>
-                    <input type="date" :value="todo.date" v-if="false">
-                    
-                    <span>{{ todo.title }}</span>
-                    <input type="text" :value="todo.title" v-if="false">
-                    
-                    <small class="tag" v-for="t in todo.tags" @click="filterByTag(t.tagId)">#{{ userTags.filter(uT => uT.id === t.tagId).map(fuT => fuT.name)[0] }}</small>
-                    <div style="display: flex; flex-direction: row;" v-if="false">
-                        <div v-for="t in todo.tags">
-                            {{t.tagId}}
-                            <span>x</span>
+                    <div style="display: flex; flex-direction: row; column-gap: 5px;">
+                        <div>
+                            <input type="checkbox">
+                        </div>
+                        <div>
+                            <input class="form__input" type="date" :value="todo.date" v-if="isEdit[index]">
+                        </div>
+                        <div>
+                            <input class="form__input" type="time" :value="todo.time" v-if="isEdit[index]">
+                        </div>
+                        <div>
+                            <input class="form__input" type="text" :value="todo.title" v-if="isEdit[index]">
+                            <span v-else>{{ todo.title }}</span> <br/>
+                            <small v-if="todo.time && !isEdit[index]" >|at : {{ todo.time }}|</small>
+                        </div>
+                        <div>
+                            <div style="display: flex; flex-direction: column;" v-if="isEdit[index]">
+                                <div v-for="t in todo.tags">
+                                    <div style="position: relative;">
+                                        <small class="tag">#{{ userTags.filter(uT => uT.id === t.tagId).map(fuT => fuT.name)[0] }}</small>
+                                        <span style="top: -4px; right: -6px; background-color: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px;cursor: pointer;">x</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <small class="tag" v-for="t in todo.tags" @click="filterByTag(t.tagId)" v-else>#{{ userTags.filter(uT => uT.id === t.tagId).map(fuT => fuT.name)[0] }}</small>
+                        </div>
+                        
+                        <div>
+                            <i class="todo__item__menu fa-solid fa-hashtag fa-sm" v-if="hoverMenu[index] " @click="handleTagController(index)"></i>
+                            
+                            <i class="todo__item__menu fa-solid fa-pen fa-sm" v-if="hoverMenu[index] && !isEdit[index]" @click="doEdit(index)"></i>
+                            <i class="todo__item__menu fa-regular fa-floppy-disk fa-sm" v-if="hoverMenu[index] && isEdit[index]" @click="doEdit(index)"></i>
+                            
+                            <i class="todo__item__menu fa-solid fa-trash fa-sm" v-if="hoverMenu[index]" @click="deleteTask(todo.taskId)"></i>
                         </div>
                     </div>
-                    
-                    <small v-if="todo.time">|scheduled at : {{ todo.time }}|</small>
-                    <input type="time" :value="todo.time" v-if="false">
-
-                    <i class="todo__item__menu fa-solid fa-tag fa-sm" v-if="hoverMenu[index] && !tagControl[index]" @click="handleTagController(index)"></i>
-                    <i class="todo__item__menu fa-solid fa-trash fa-sm" v-if="hoverMenu[index]" @click="deleteTask(todo.taskId)"></i>
                 </div>
-                
+                    
                 <div style="margin-top: 10px;" v-if="tagControl[index]">
                     <select v-model="selectedTag" @change="tagTask(index, todo.taskId, todo.tags)">
                         <option value="" disabled>--Select Tag--</option>
@@ -193,7 +118,6 @@
                     </template>
                     <i class="todo__item__menu fa-solid fa-close fa-lg" v-if="tagControl[index]" @click="handleTagController(index)"></i>
                 </div>
-                
             </div>
         </div>
     </template>
@@ -203,13 +127,13 @@
     <script>
         const { createApp, ref, toRef, onMounted , watch} = Vue
         const userId = 1;
-        const apiHost = ""
+        const apiHost = "http://localhost:8080"
 
         //reusable component
         const todos = {
             template: '#group_todo',
             props: ['data','_date', 'user_tags'],
-            emits: ['filter_by_tag', 'task_update'],
+            emits: ['filter_by_tag', 'task_update', 'errors'],
             setup(props, { emit }) {
                 const tagControl = ref({})
                 const hoverMenu = ref({})
@@ -219,6 +143,7 @@
                 const selectedTag = ref('')
                 const newTag = ref(false)
                 const newTagValue = ref('')
+                const isEdit = ref({})
                 
                 const tagTask = (index, taskId, tags=[]) => {
                     if(selectedTag.value && selectedTag.value !== 'NEW') {
@@ -251,7 +176,7 @@
                         selectedTag.value = ''
                         userTags.value.push(data)
                     })
-                    .catch(e => console.log(e))
+                    .catch(e => emit('errors', e.message))
                 }
 
                 const handleTagController = (index) => {
@@ -276,7 +201,7 @@
                         return response.json()
                     })
                     .then(data => emit('task_update'))
-                    .catch(e => console.log(e))
+                    .catch(e => emit('errors', e.message))
                 }
 
                 const fetchTagName = (tagId) => {
@@ -287,7 +212,6 @@
                             return response.json()
                         })
                         .then(data => data.name)
-                    //return `${tagId}`
                 }
 
                 const deleteTask = (taskId) => {
@@ -295,8 +219,12 @@
                         method: 'DELETE'
                     })
                     .then(data => emit('task_update'))
-                    .catch(e => console.log(e))
+                    .catch(e => emit('errors', e.message))
 
+                }
+
+                const doEdit = (index) => {
+                    isEdit.value[index] = !isEdit.value[index]
                 }
 
                 watch(
@@ -314,7 +242,7 @@
                     tagControl, handleTagController, date, 
                         data, userTags, selectedTag, filterByTag, newTag, 
                             newTagValue, hoverMenu, fetchTagName, tagTask, addNewTag,
-                                deleteTask
+                                deleteTask, doEdit, isEdit
                 };
             }
         }
@@ -331,6 +259,7 @@
                 const taskGroup = ref({})
                 const userTags = ref([])
                 const clearFilter = ref(false)
+                const errors = ref([])
 
                 const saveTask = (task) => {
                   fetch(`${apiHost}/todo/${userId}/tasks`,{
@@ -346,7 +275,7 @@
                         return response.json()
                     })
                     .then(data => allTask())
-                    .catch(e => console.log(e))
+                    .catch(e => errors.value.push(e.message))
                 }
 
                 const allTask = () => {
@@ -357,6 +286,7 @@
                             return response.json()
                         })
                         .then(data => tasks.value = data)
+                        .catch(e => errors.value.push(e.message))
                 }
 
                 const allTags = () => {
@@ -367,6 +297,7 @@
                             return response.json()
                         })
                         .then(data => userTags.value = data)
+                        .catch(e => errors.value.push(e.message))
                 }
 
                 const submitTask = () => {
@@ -393,6 +324,7 @@
                         })
                         .then(data => tasks.value = data)
                         .then(data => clearFilter.value = true)
+                        .catch(e => errors.value.push(e.message))
                 }
 
                 onMounted(() => {
@@ -410,7 +342,9 @@
                 )
                 
                 return {
-                    message, task, submitTask, tasks, taskGroup, userTags, reloadTasks, displayAllByTag, clearFilter
+                    message, task, submitTask, tasks, taskGroup, 
+                        userTags, reloadTasks, displayAllByTag, clearFilter,
+                        errors
                 }
             },
             components: {todos}
