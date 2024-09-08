@@ -18,7 +18,7 @@ services:
           - node.hostname == samit-NUC
 
   todo:
-    image: ghcr.io/samitkumarpatel/todo:020920241940
+    image: ghcr.io/samitkumarpatel/todo:020920241951
     restart: on-failure
     depends_on:
       - "db"
