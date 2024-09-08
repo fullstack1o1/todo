@@ -69,13 +69,13 @@
                             <input type="checkbox">
                         </div>
                         <div>
-                            <input class="form__input" type="date" :value="todo.date" v-if="isEdit[index]">
+                            <input class="form__input" type="date" :value="todo.date" @change="(e) => todo.date = e.target.value" v-if="isEdit[index]">
                         </div>
                         <div>
-                            <input class="form__input" type="time" :value="todo.time" v-if="isEdit[index]">
+                            <input class="form__input" type="time" :value="todo.time" @change="(e) => todo.time = e.target.value" v-if="isEdit[index]">
                         </div>
                         <div>
-                            <input class="form__input" type="text" :value="todo.title" v-if="isEdit[index]">
+                            <input class="form__input" type="text" :value="todo.title" @change="(e) => todo.title = e.target.value" v-if="isEdit[index]">
                             <span v-else>{{ todo.title }}</span> <br/>
                             <small v-if="todo.time && !isEdit[index]" >|at : {{ todo.time }}|</small>
                         </div>
@@ -84,7 +84,7 @@
                                 <div v-for="t in todo.tags">
                                     <div style="position: relative;">
                                         <small class="tag">#{{ userTags.filter(uT => uT.id === t.tagId).map(fuT => fuT.name)[0] }}</small>
-                                        <span style="top: -7px; right: 0px; background-color: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px;cursor: pointer;position: absolute">x</span>
+                                        <span class="x-edit-tag" @click="() => todo.tags = todo.tags.filter(x => x.tagId !== t.tagId)">X</span>
                                     </div>
                                 </div>
                             </div>
@@ -95,7 +95,7 @@
                             <i class="todo__item__menu fa-solid fa-hashtag fa-sm" v-if="hoverMenu[index] " @click="handleTagController(index)"></i>
                             
                             <i class="todo__item__menu fa-solid fa-pen fa-sm" v-if="hoverMenu[index] && !isEdit[index]" @click="doEdit(index)"></i>
-                            <i class="todo__item__menu fa-regular fa-floppy-disk fa-sm" v-if="hoverMenu[index] && isEdit[index]" @click="doEdit(index)"></i>
+                            <i class="todo__item__menu fa-regular fa-floppy-disk fa-sm" v-if="hoverMenu[index] && isEdit[index]" @click="editSave(index, todo)"></i>
                             
                             <i class="todo__item__menu fa-solid fa-trash fa-sm" v-if="hoverMenu[index]" @click="deleteTask(todo.taskId)"></i>
                         </div>
@@ -144,6 +144,7 @@
                 const newTag = ref(false)
                 const newTagValue = ref('')
                 const isEdit = ref({})
+                const edited_todo = ref({})
                 
                 const tagTask = (index, taskId, tags=[]) => {
                     if(selectedTag.value && selectedTag.value !== 'NEW') {
@@ -227,6 +228,12 @@
                     isEdit.value[index] = !isEdit.value[index]
                 }
 
+                const editSave = (index, todo) => {
+                    doEdit(index)
+                    //proceed with the patch operation
+                    console.log(todo)
+                }
+
                 watch(
                     () => selectedTag.value,
                     (whatSelected) => {
@@ -242,7 +249,7 @@
                     tagControl, handleTagController, date, 
                         data, userTags, selectedTag, filterByTag, newTag, 
                             newTagValue, hoverMenu, fetchTagName, tagTask, addNewTag,
-                                deleteTask, doEdit, isEdit
+                                deleteTask, doEdit, isEdit, editSave, edited_todo
                 };
             }
         }
