@@ -6,6 +6,7 @@ on:
     branches: [ main ]
     paths-ignore:
       - 'oas/**'
+      - 'deployment/**'
 
 permissions:
   contents: write
