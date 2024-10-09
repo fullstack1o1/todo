@@ -60,9 +60,28 @@ small.tag:hover {
     height: 15px;
 }
 
+.todo__tag__container__hide {
+    display: none;
+}
+
+.todo__tag__container {
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 10px;
+    position: absolute;
+    background-color: white;
+    color: black;
+}
+
+.todo__tag__container label {
+    display: block;
+    margin: 10px 0px;
+}
+
 .todo__item div {
     margin-right: 10px;
 }
+
 .todo__result {
     margin-top: 30px;
 }
@@ -70,6 +89,7 @@ small.tag:hover {
 ul li {
     list-style: none;
 }
+
 .add__tag__button {
     margin-top: 5px;
     border: 1px solid blue;
@@ -114,4 +134,26 @@ ul li {
 .x-edit-tag:hover {
     background-color: blue;
     color: white;
+}
+
+
+.bell:hover {
+    cursor: pointer;
+}
+
+.bell__content {
+    border: 1px solid black;
+    border-radius: 10px;
+    background-color: white;
+    width: 150px;
+    position: absolute;
+    padding: 10px;
+}
+
+.bell__content_hide {
+    display: none;
+}
+
+.bell__content span {
+    display: block;
 }

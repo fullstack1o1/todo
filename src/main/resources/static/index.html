@@ -14,8 +14,12 @@
         <div style="display: flex; flex-direction: row; justify-content: space-between;align-items: center;">
             <h1>{{ message }}</h1>
             <div style="position: relative;">
-                <i class="fa-solid fa-bell fa-xl"></i>
+                <i class="bell fa-solid fa-bell fa-xl" @click="() => notificationToggle = !notificationToggle"></i>
                 <span style="position: absolute; top: -10px; right: -10px; background-color: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px;">0</span>
+                <div :class="notificationToggle ? 'bell__content' : 'bell__content bell__content_hide'" >
+                    <span>notification 1</span>
+                    <span>notification 2</span>
+                </div>
             </div>
         </div>
 
@@ -56,15 +60,54 @@
     </div>
 
     <template id="group_todo">
-        <p style="font-size: large; text-decoration: underline">{{ date }}</p>
+        <p style="font-size: large; text-decoration: underline;">{{ date }}</p>
         <div class="todo__item" 
             v-for="(todo, index) in data" :key="index" 
             @mouseover="() => hoverMenu[index] = true"
             @mouseleave="() => hoverMenu[index] = false">
+            <div>
+                <input type="checkbox">
+            </div>
             
-            <div style="display: flex; flex-direction: column; row-gap: 10px;">
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                {{ todo.title}}
+                <small>{{todo.time}}</small>
+            </div>
+
+            <div>
+                <small class="tag" v-for="t in todo.tags" @click="filterByTag(t.tagId)">#{{ userTags.filter(uT => uT.id === t.tagId).map(fuT => fuT.name)[0] }}</small>
+            </div>
+            
+            <div style="display: flex; flex-direction: row; gap: 5px;">
+                
+                <div class="todo__item__menu">
+                    <i class="todo__tag fa-solid fa-hashtag fa-sm" v-if="hoverMenu[index] " @click="handleTagController(index)"></i>
+                    <div :class="tagControl[index] ? 'todo__tag__container' : 'todo__tag__container todo__tag__container__hide'">
+                        <label for="newTag">New Tag</label>
+                        <input id="newTag" type="text" placeholder="new tag" v-model="newTagValue">
+                        <button :disabled="!newTagValue" @click="addNewTag">Ok</button>
+                        
+                        <label for="selectTag">Select Tag</label>
+                        <select id="selectTag" v-model="selectedTag" @change="tagTask(index, todo.taskId, todo.tags)">
+                            <option value="" disabled>--Select Tag--</option>
+                            <option :value="userTag.id" v-for="userTag in userTags">{{ userTag.name }}</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="todo__item__menu">
+                    <i class="fa-solid fa-pen fa-sm" v-if="hoverMenu[index] && !isEdit[index]" @click="doEdit(index)"></i>
+                    <i class="fa-regular fa-floppy-disk fa-sm" v-if="hoverMenu[index] && isEdit[index]" @click="editSave(index, todo)"></i>
+                </div>
+                
+                <div class="todo__item__menu">
+                    <i class="fa-solid fa-trash fa-sm" v-if="hoverMenu[index]" @click="deleteTask(todo.taskId)"></i>
+                </div>
+                
+            </div>
+            <!-- <div style="display: flex; flex-direction: column; row-gap: 10px;">
                 <div>
-                    <div style="display: flex; flex-direction: row; column-gap: 5px;">
+                    <div style="display: flex; flex-direction: row; row-gap: 5px;">
                         <div>
                             <input type="checkbox">
                         </div>
@@ -118,7 +161,8 @@
                     </template>
                     <i class="todo__item__menu fa-solid fa-close fa-lg" v-if="tagControl[index]" @click="handleTagController(index)"></i>
                 </div>
-            </div>
+            </div> -->
+
         </div>
     </template>
     
@@ -127,7 +171,7 @@
     <script>
         const { createApp, ref, toRef, onMounted , watch} = Vue
         const userId = 1;
-        const apiHost = ""
+        const apiHost = "http://192.168.0.188:8083"
 
         //reusable component
         const todos = {
@@ -155,6 +199,7 @@
                         
                         patchTask(taskId, task)
                         selectedTag.value = ''
+                        tagControl.value[index] = !tagControl.value[index]
                     }
                 }
 
@@ -266,6 +311,7 @@
                 const userTags = ref([])
                 const clearFilter = ref(false)
                 const errors = ref([])
+                const notificationToggle = ref(false)
 
                 const saveTask = (task) => {
                   fetch(`${apiHost}/todo/${userId}/tasks`,{
@@ -350,7 +396,7 @@
                 return {
                     message, task, submitTask, tasks, taskGroup, 
                         userTags, reloadTasks, displayAllByTag, clearFilter,
-                        errors
+                        errors, notificationToggle
                 }
             },
             components: {todos}
