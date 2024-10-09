@@ -58,8 +58,6 @@ components:
           format: email
         passwordHash:
           type: string
-      required:
-        - userId
 
     TaskStatus:
       type: string
@@ -148,8 +146,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TagReference'
-      required:
-        - taskId
     
     TaskRequest:
       type: object
@@ -223,8 +219,6 @@ components:
           format: int64
         name:
           type: string
-      required:
-        - id
     
     TagRequest:
       type: object
