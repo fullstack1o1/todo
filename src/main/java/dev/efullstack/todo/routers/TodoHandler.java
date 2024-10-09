@@ -37,12 +37,12 @@ public class TodoHandler {
                 .flatMap(tag -> ServerResponse.ok().bodyValue(tag));
     }
 
-    public Mono<ServerResponse> updateTask(ServerRequest request) {
+    public Mono<ServerResponse> patchTask(ServerRequest request) {
         var userId = Long.valueOf(request.pathVariable("userId"));
         var taskId = Long.valueOf(request.pathVariable("taskId"));
         return request
                 .bodyToMono(Task.class)
-                .flatMap(task -> taskService.updateTask(userId, taskId, task))
+                .flatMap(task -> taskService.patchTask(userId, taskId, task))
                 .flatMap(ServerResponse.ok()::bodyValue);
     }
 
@@ -59,12 +59,12 @@ public class TodoHandler {
                 .flatMap(ServerResponse.ok()::bodyValue);
     }
 
-    public Mono<ServerResponse> updateTag(ServerRequest request) {
+    public Mono<ServerResponse> patchTag(ServerRequest request) {
         var userId = Long.valueOf(request.pathVariable("userId"));
         var tagId = Long.valueOf(request.pathVariable("tagId"));
         return request
                 .bodyToMono(Tag.class)
-                .flatMap(tag -> tagService.updateTag(userId, tagId, tag))
+                .flatMap(tag -> tagService.patchTag(userId, tagId, tag))
                 .flatMap(ServerResponse.ok()::bodyValue);
     }
 
@@ -94,5 +94,23 @@ public class TodoHandler {
         var taskId = Long.valueOf(request.pathVariable("taskId"));
         return taskService.deleteTask(userId, taskId)
                 .then(ServerResponse.ok().build());
+    }
+
+    public Mono<ServerResponse> updateTask(ServerRequest request) {
+        var userId = Long.valueOf(request.pathVariable("userId"));
+        var taskId = Long.valueOf(request.pathVariable("taskId"));
+        return request
+                .bodyToMono(Task.class)
+                .flatMap(task -> taskService.updateTask(userId, taskId, task))
+                .flatMap(ServerResponse.ok()::bodyValue);
+    }
+
+    public Mono<ServerResponse> updateTag(ServerRequest request) {
+        var userId = Long.valueOf(request.pathVariable("userId"));
+        var tagId = Long.valueOf(request.pathVariable("tagId"));
+        return request
+                .bodyToMono(Tag.class)
+                .flatMap(tag -> tagService.updateTag(userId, tagId, tag))
+                .flatMap(ServerResponse.ok()::bodyValue);
     }
 }

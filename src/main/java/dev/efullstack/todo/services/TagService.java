@@ -7,6 +7,7 @@ import dev.efullstack.todo.repositories.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class TagService {
         return Mono.fromCallable(() -> tagRepository.findByUserIdAndId(userId, tagId).orElseThrow(TagNotFoundException::new));
     }
 
-    public Mono<Tag> updateTag(Long userId, Long tagId, Tag tag) {
+    public Mono<Tag> patchTag(Long userId, Long tagId, Tag tag) {
         return tagById(userId, tagId)
                 .zipWith(Mono.just(tag), (dbTag, requestTag) -> {
                     if (nonNull(requestTag.getName())) {
@@ -34,6 +35,13 @@ public class TagService {
                     }
                     return dbTag;
                 });
+    }
+
+    public Mono<Tag> updateTag(Long userId, Long tagId, Tag tag) {
+        tag.setUserId(userId);
+        return tagById(userId, tagId)
+                .publishOn(Schedulers.boundedElastic())
+                .map(dbTag -> tagRepository.save(tag));
     }
 
     public Mono<List<Tag>> allTag(Long userId) {

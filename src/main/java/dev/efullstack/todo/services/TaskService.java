@@ -7,13 +7,16 @@ import dev.efullstack.todo.models.TaskTag;
 import dev.efullstack.todo.repositories.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
+import static org.springframework.util.CollectionUtils.*;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +33,7 @@ public class TaskService {
         return Mono.fromCallable(() -> taskRepository.findByUserIdAndTaskId(userId, taskId).orElseThrow(TaskNotFoundException::new));
     }
 
-    public Mono<Task> updateTask(Long userId, Long taskId, Task task) {
+    public Mono<Task> patchTask(Long userId, Long taskId, Task task) {
         return Mono.fromCallable(() -> taskRepository.findByUserIdAndTaskId(userId, taskId).orElseThrow(TaskNotFoundException::new))
                 .zipWith(Mono.just(task), (dbTask, requestTask) -> {
                     if (nonNull(requestTask.getTitle())) {
@@ -45,10 +48,10 @@ public class TaskService {
                     if (nonNull(requestTask.getDate())) {
                         dbTask.setDate(requestTask.getDate());
                     }
-                    if(nonNull(requestTask.getTime())) {
+                    if (nonNull(requestTask.getTime())) {
                         dbTask.setTime(requestTask.getTime());
                     }
-                    if (nonNull(requestTask.getTags())) {
+                    if (nonNull(requestTask.getTags()) && !requestTask.getTags().equals(dbTask.getTags())) {
                         dbTask.setTags(requestTask.getTags());
                     }
                     return dbTask;
@@ -62,5 +65,12 @@ public class TaskService {
 
     public Mono<Void> deleteTask(Long userId, Long taskId) {
         return Mono.fromRunnable(() -> taskRepository.deleteById(taskId));
+    }
+
+    public Mono<Task> updateTask(Long userId, Long taskId, Task task) {
+        task.setUserId(userId);
+        return Mono.fromCallable(() -> taskRepository.findByUserIdAndTaskId(userId, taskId).orElseThrow(TaskNotFoundException::new))
+                .publishOn(Schedulers.boundedElastic())
+                .map(dbTask -> taskRepository.save(task));
     }
 }

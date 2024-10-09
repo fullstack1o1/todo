@@ -60,6 +60,29 @@ public class TodoIntegrationTest {
                                 "name":"shopping"
                             }
                         """),
+                //TAG - PUT
+                () -> webTestClient
+                        .put()
+                        .uri("/todo/{userId}/tags/{tagId}", userId, 1)
+                        .contentType(APPLICATION_JSON)
+                        .bodyValue("""
+                                {
+                                    "id":1,
+                                    "userId": 1,
+                                    "name":"shopping-u"
+                                }
+                                """)
+                        .exchange()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody()
+                        .json("""
+                            {
+                                "id":1,
+                                "userId": 1,
+                                "name":"shopping-u"
+                            }
+                        """),
                 //TAG - PATCH
                 () -> webTestClient
                         .patch()
@@ -143,6 +166,38 @@ public class TodoIntegrationTest {
                                 "tags":[{"taskId":1,"tagId":1}]
                               }
                             ]
+                        """),
+                //TASK - PUT
+                () -> webTestClient
+                        .put()
+                        .uri("/todo/{userId}/tasks/{taskId}", userId, 1)
+                        .contentType(APPLICATION_JSON)
+                        .bodyValue("""
+                          {
+                            "taskId":1,
+                            "title":"Buy grocery-u",
+                            "description":"Task 1",
+                            "status":"PENDING",
+                            "date":"2021-08-01",
+                            "time": "00:00:15",
+                            "tags":[{"taskId":1,"tagId":1}]
+                          }
+                        """)
+                        .exchange()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody()
+                        .json("""
+                            {
+                                "taskId":1,
+                                "userId":1,
+                                "title":"Buy grocery-u",
+                                "description":"Task 1",
+                                "status": "PENDING",
+                                "date":"2021-08-01",
+                                "time": "00:00:15",
+                                "tags":[{"taskId":1,"tagId":1}]
+                            }
                         """),
                 //TASK - PATCH
                 () -> webTestClient

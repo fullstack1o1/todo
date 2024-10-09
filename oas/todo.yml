@@ -26,6 +26,41 @@ components:
         - email
         - passwordHash
 
+    UserUpdate:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        passwordHash:
+          type: string
+      required:
+        - userId
+        - username
+        - email
+        - passwordHash
+
+    UserPatch:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        passwordHash:
+          type: string
+      required:
+        - userId
+
     TaskStatus:
       type: string
       enum:
@@ -62,6 +97,59 @@ components:
         - title
         - date
         - tags
+
+    TaskUpdate:
+      type: object
+      properties:
+        taskId:
+          type: integer
+          format: int64
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+          format: time
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagReference'
+      required:
+        - taskId
+        - title
+        - date
+        - tags
+
+    TaskPatch:
+      type: object
+      properties:
+        taskId:
+          type: integer
+          format: int64
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+          format: time
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagReference'
+      required:
+        - taskId
     
     TaskRequest:
       type: object
@@ -114,6 +202,29 @@ components:
       required:
         - id
         - name
+
+    TagUpdate:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+      required:
+        - id
+        - name
+
+    TagPatch:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+      required:
+        - id
     
     TagRequest:
       type: object
@@ -187,7 +298,32 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+
+    patch:
+      summary: Partial Update a user
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPatch'
       responses:
         '200':
           description: User updated successfully
@@ -275,7 +411,32 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TaskRequest'
+              $ref: '#/components/schemas/TaskUpdate'
+      responses:
+        '200':
+          description: Task updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          description: Task not found
+
+    patch:
+      summary: Partial Update a task
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskPatch'
       responses:
         '200':
           description: Task updated successfully
@@ -363,7 +524,32 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TagRequest'
+              $ref: '#/components/schemas/TagUpdate'
+      responses:
+        '200':
+          description: Tag updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+        '404':
+          description: Tag not found
+
+    patch:
+      summary: Partial Update a tag
+      parameters:
+        - in: path
+          name: tagId
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagPatch'
       responses:
         '200':
           description: Tag updated successfully
@@ -388,6 +574,7 @@ paths:
           description: Tag deleted successfully
         '404':
           description: Tag not found
+
   /{userId}/tags/{tagId}/tasks:
     get:
       summary: Get tasks by tagId
