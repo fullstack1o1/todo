@@ -48,7 +48,7 @@ public class TaskService {
                     if (nonNull(requestTask.getDescription())) {
                         dbTask.setDescription(requestTask.getDescription());
                     }
-
+                    //TODO fix me :: When request is missing , the model has default value which is not null - It might not work time to time
                     if (nonNull(requestTask.getStatus()) && !dbTask.getStatus().equals(requestTask.getStatus())) {
                         dbTask.setStatus(requestTask.getStatus());
                     }
