@@ -206,8 +206,7 @@ public class TodoRouterTest {
                         .contentType(APPLICATION_JSON)
                         .bodyValue("""
                           {
-                              "title": "Buy Grocery",
-                              "tags": []
+                              "title": "Buy Grocery"
                           }
                         """)
                         .exchange()
@@ -223,7 +222,7 @@ public class TodoRouterTest {
                                 "status": "PENDING",
                                 "date":"2021-08-01",
                                 "time": "00:00:15",
-                                "tags":[]
+                                "tags":[{"taskId":1,"tagId":1}]
                             }
                         """),
                 //TASK - PATCH
@@ -259,7 +258,7 @@ public class TodoRouterTest {
                                 "status":"PENDING",
                                 "date":"2021-08-01",
                                 "time": "00:00:15",
-                                "tags":[]
+                                "tags":[{"taskId":1,"tagId":1}]
                             }
                          """),
                 //TASK - GET
@@ -280,7 +279,7 @@ public class TodoRouterTest {
                                 "status":"PENDING",
                                 "date":"2021-08-01",
                                 "time": "00:00:15",
-                                "tags":[]
+                                "tags":[{"taskId":1,"tagId":1}]
                             }
                           ]
                         """)

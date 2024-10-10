@@ -30,10 +30,13 @@
         <hr/>
         <div class="todo__form">
             <form @submit.prevent="submitTask">
-                <input class="form__input" type="date" v-model="task.date">
-                <input class="form__input" type="time" v-model="task.time">
-                <input class="form__input" type="text" v-model="task.title">
-                <button class="form__button" :disabled="!task.title || !task.date">Add</button>
+                <fieldset style="display: flex; flex-wrap: wrap; gap: 5px;">
+                    <legend align="left">add new task</legend>
+                    <input class="form__input" type="date" v-model="task.date">
+                    <input class="form__input" type="time" v-model="task.time">
+                    <input class="form__input" type="text" v-model="task.title">
+                    <button class="form__button" :disabled="!task.title || !task.date">Add</button>
+                </fieldset>
             </form>
         </div>
         
@@ -65,23 +68,47 @@
             v-for="(todo, index) in data" :key="index" 
             @mouseover="() => hoverMenu[index] = true"
             @mouseleave="() => hoverMenu[index] = false">
-            <div>
-                <input type="checkbox">
-            </div>
             
-            <div style="display: flex; flex-direction: column; gap: 5px;">
-                {{ todo.title}}
-                <small>{{todo.time}}</small>
+            <div id="todo__status" v-if="isEdit[index]">
+                <input type="checkbox" :checked="todo.status === 'PENDING' ? false : true" @change="(e) => todo.status = e.target.checked ? 'COMPLETED' : 'PENDING' ">
             </div>
 
-            <div>
-                <small class="tag" v-for="t in todo.tags" @click="filterByTag(t.tagId)">#{{ userTags.filter(uT => uT.id === t.tagId).map(fuT => fuT.name)[0] }}</small>
+            <div id="todo__status" v-else>
+                <input type="checkbox" :checked="todo.status === 'PENDING' ? false : true" @change="(e) => updateTaskStatus(e, todo.taskId)">
             </div>
             
-            <div style="display: flex; flex-direction: row; gap: 5px;">
+            <div id="todo__date_time__edit" v-if="isEdit[index]">
+                <input class="form__input" type="date" :value="todo.date" @change="(e) => todo.date = e.target.value">
+                <input class="form__input" type="time" :value="todo.time" @change="(e) => todo.time = e.target.value">
+            </div>
+            
+            <div id="todo__title_time" style="display: flex; flex-direction: column; gap: 5px;">
+                <template v-if="isEdit[index]">
+                    <input class="form__input" type="text" :value="todo.title" @change="(e) => todo.title = e.target.value">
+                </template>
+                <template v-else>
+                    {{ todo.title}}
+                    <small>{{todo.time}}</small>
+                </template>
+            </div>
+
+            <div id="todo__tags">
+                <div style="display: flex; flex-direction: column;" v-if="isEdit[index]">
+                    <div v-for="t in todo.tags">
+                        <div style="position: relative;">
+                            <small class="tag">#{{ userTags.filter(uT => uT.id === t.tagId).map(fuT => fuT.name)[0] }}</small>
+                            <span class="x-edit-tag" @click="() => todo.tags = todo.tags.filter(x => x.tagId !== t.tagId)">X</span>
+                        </div>
+                    </div>
+                </div>
+
+                <small class="tag" v-for="t in todo.tags" @click="filterByTag(t.tagId)" v-else>#{{ userTags.filter(uT => uT.id === t.tagId).map(fuT => fuT.name)[0] }}</small>
+            </div>
+            
+            <div id="todo__action" style="display: flex; flex-direction: row;">
                 
                 <div class="todo__item__menu">
-                    <i class="todo__tag fa-solid fa-hashtag fa-sm" v-if="hoverMenu[index] " @click="handleTagController(index)"></i>
+                    <i class="todo__tag fa-solid fa-hashtag fa-sm" v-if="hoverMenu[index]" @click="handleTagController(index)"></i>
                     <div :class="tagControl[index] ? 'todo__tag__container' : 'todo__tag__container todo__tag__container__hide'">
                         <label for="newTag">New Tag</label>
                         <input id="newTag" type="text" placeholder="new tag" v-model="newTagValue">
@@ -103,66 +130,7 @@
                 <div class="todo__item__menu">
                     <i class="fa-solid fa-trash fa-sm" v-if="hoverMenu[index]" @click="deleteTask(todo.taskId)"></i>
                 </div>
-                
             </div>
-            <!-- <div style="display: flex; flex-direction: column; row-gap: 10px;">
-                <div>
-                    <div style="display: flex; flex-direction: row; row-gap: 5px;">
-                        <div>
-                            <input type="checkbox">
-                        </div>
-                        <div>
-                            <input class="form__input" type="date" :value="todo.date" @change="(e) => todo.date = e.target.value" v-if="isEdit[index]">
-                        </div>
-                        <div>
-                            <input class="form__input" type="time" :value="todo.time" @change="(e) => todo.time = e.target.value" v-if="isEdit[index]">
-                        </div>
-                        <div>
-                            <input class="form__input" type="text" :value="todo.title" @change="(e) => todo.title = e.target.value" v-if="isEdit[index]">
-                            <span v-else>{{ todo.title }}</span> <br/>
-                            <small v-if="todo.time && !isEdit[index]" >|at : {{ todo.time }}|</small>
-                        </div>
-                        <div>
-                            <div style="display: flex; flex-direction: column;" v-if="isEdit[index]">
-                                <div v-for="t in todo.tags">
-                                    <div style="position: relative;">
-                                        <small class="tag">#{{ userTags.filter(uT => uT.id === t.tagId).map(fuT => fuT.name)[0] }}</small>
-                                        <span class="x-edit-tag" @click="() => todo.tags = todo.tags.filter(x => x.tagId !== t.tagId)">X</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <small class="tag" v-for="t in todo.tags" @click="filterByTag(t.tagId)" v-else>#{{ userTags.filter(uT => uT.id === t.tagId).map(fuT => fuT.name)[0] }}</small>
-                        </div>
-                        
-                        <div>
-                            <i class="todo__item__menu fa-solid fa-hashtag fa-sm" v-if="hoverMenu[index] " @click="handleTagController(index)"></i>
-                            
-                            <i class="todo__item__menu fa-solid fa-pen fa-sm" v-if="hoverMenu[index] && !isEdit[index]" @click="doEdit(index)"></i>
-                            <i class="todo__item__menu fa-regular fa-floppy-disk fa-sm" v-if="hoverMenu[index] && isEdit[index]" @click="editSave(index, todo)"></i>
-                            
-                            <i class="todo__item__menu fa-solid fa-trash fa-sm" v-if="hoverMenu[index]" @click="deleteTask(todo.taskId)"></i>
-                        </div>
-                    </div>
-                </div>
-                    
-                <div style="margin-top: 10px;" v-if="tagControl[index]">
-                    <select v-model="selectedTag" @change="tagTask(index, todo.taskId, todo.tags)">
-                        <option value="" disabled>--Select Tag--</option>
-                        <optgroup label="New">
-                            <option value='NEW'>Create New</option>
-                        </optgroup>
-                        <optgroup label="Available">
-                            <option :value="userTag.id" v-for="userTag in userTags">{{ userTag.name }}</option>
-                        </optgroup>
-                    </select>
-                    <template v-if="newTag" >
-                        <input style="margin-left: 10px;" type="text" placeholder="Add New Tag" v-model="newTagValue">
-                        <button style="margin-left: 5px;" :disabled="!newTagValue" @click="addNewTag">Ok</button>
-                    </template>
-                    <i class="todo__item__menu fa-solid fa-close fa-lg" v-if="tagControl[index]" @click="handleTagController(index)"></i>
-                </div>
-            </div> -->
-
         </div>
     </template>
     
@@ -171,7 +139,7 @@
     <script>
         const { createApp, ref, toRef, onMounted , watch} = Vue
         const userId = 1;
-        const apiHost = "http://192.168.0.188:8083"
+        const apiHost = "http://localhost:8080"
 
         //reusable component
         const todos = {
@@ -189,11 +157,18 @@
                 const newTagValue = ref('')
                 const isEdit = ref({})
                 const edited_todo = ref({})
+
+                const updateTaskStatus = (e, taskId) => {
+                    const task = {
+                        "status" : e.target.checked ? "COMPLETED" : "PENDING"
+                    }
+                    patchTask(taskId, task)
+                }
                 
                 const tagTask = (index, taskId, tags=[]) => {
-                    if(selectedTag.value && selectedTag.value !== 'NEW') {
-                        console.log(tags)
+                    if(selectedTag.value) {
                         const task = {
+                            "status" : null,
                             "tags" : [...tags, { "taskId": taskId, "tagId" : selectedTag.value }]
                         }
                         
@@ -250,6 +225,23 @@
                     .catch(e => emit('errors', e.message))
                 }
 
+                const putTask = (taskId, putObject) => {
+                    fetch(`${apiHost}/todo/${userId}/tasks/${taskId}`, {
+                        method: 'PUT',
+                        headers : {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(putObject)
+                    })
+                    .then(response => {
+                        if(!response.ok)
+                            throw new Error("Error While updating")
+                        return response.json()
+                    })
+                    .then(data => emit('task_update'))
+                    .catch(e => emit('errors', e.message))
+                }
+
                 const fetchTagName = (tagId) => {
                     return fetch(`${apiHost}/todo/${userId}/tags/${tagId}`)
                         .then(response => {
@@ -274,8 +266,7 @@
 
                 const editSave = (index, todo) => {
                     doEdit(index)
-                    //proceed with the patch operation
-                    console.log(todo)
+                    putTask(todo.taskId, todo)
                 }
 
                 watch(
@@ -293,7 +284,7 @@
                     tagControl, handleTagController, date, 
                         data, userTags, selectedTag, filterByTag, newTag, 
                             newTagValue, hoverMenu, fetchTagName, tagTask, addNewTag,
-                                deleteTask, doEdit, isEdit, editSave, edited_todo
+                                deleteTask, doEdit, isEdit, editSave, edited_todo, updateTaskStatus
                 };
             }
         }

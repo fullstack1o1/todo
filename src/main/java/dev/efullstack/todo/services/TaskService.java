@@ -6,13 +6,17 @@ import dev.efullstack.todo.models.Task;
 import dev.efullstack.todo.models.TaskTag;
 import dev.efullstack.todo.repositories.TaskRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
@@ -21,6 +25,7 @@ import static org.springframework.util.CollectionUtils.*;
 @Service
 @RequiredArgsConstructor
 public class TaskService {
+    private static final Logger log = LoggerFactory.getLogger(TaskService.class);
     final TaskRepository taskRepository;
 
     public Mono<Task> newTask(Long userId, Task task) {
@@ -39,19 +44,24 @@ public class TaskService {
                     if (nonNull(requestTask.getTitle())) {
                         dbTask.setTitle(requestTask.getTitle());
                     }
+
                     if (nonNull(requestTask.getDescription())) {
                         dbTask.setDescription(requestTask.getDescription());
                     }
-                    if (nonNull(requestTask.getStatus())) {
+
+                    if (nonNull(requestTask.getStatus()) && !dbTask.getStatus().equals(requestTask.getStatus())) {
                         dbTask.setStatus(requestTask.getStatus());
                     }
+
                     if (nonNull(requestTask.getDate())) {
                         dbTask.setDate(requestTask.getDate());
                     }
+
                     if (nonNull(requestTask.getTime())) {
                         dbTask.setTime(requestTask.getTime());
                     }
-                    if (nonNull(requestTask.getTags()) && !requestTask.getTags().equals(dbTask.getTags())) {
+
+                    if (!requestTask.getTags().isEmpty() && !dbTask.getTags().equals(requestTask.getTags())) {
                         dbTask.setTags(requestTask.getTags());
                     }
                     return dbTask;
