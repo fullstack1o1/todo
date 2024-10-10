@@ -356,6 +356,9 @@ paths:
               - CURRENT_WEEK_TODO
               - LAST_WEEK_TODO
               - NEXT_WEEK_TODO
+              - LAST_MONTH
+              - CURRENT_MONTH
+              - NEXT_MONTH
 
       responses:
         '200':

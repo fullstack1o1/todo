@@ -16,6 +16,7 @@ import reactor.core.scheduler.Schedulers;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -99,6 +100,21 @@ public class TaskService {
                     userId,
                     LocalDate.now().with(DayOfWeek.MONDAY).minusWeeks(1),
                     LocalDate.now().with(DayOfWeek.SUNDAY).minusWeeks(1))
+            );
+            case "LAST_MONTH" -> Mono.fromCallable(() -> taskRepository.findTasksByUserIdAndDateBetween(
+                    userId,
+                    YearMonth.from(LocalDate.now()).minusMonths(1).atDay(1),
+                    YearMonth.from(LocalDate.now()).minusMonths(1).atEndOfMonth())
+            );
+            case "CURRENT_MONTH" -> Mono.fromCallable(() -> taskRepository.findTasksByUserIdAndDateBetween(
+                    userId,
+                    YearMonth.from(LocalDate.now()).atDay(1),
+                    YearMonth.from(LocalDate.now()).atEndOfMonth())
+            );
+            case "NEXT_MONTH" -> Mono.fromCallable(() -> taskRepository.findTasksByUserIdAndDateBetween(
+                    userId,
+                    YearMonth.from(LocalDate.now()).plusMonths(1).atDay(1),
+                    YearMonth.from(LocalDate.now()).plusMonths(1).atEndOfMonth())
             );
             default -> Mono.error(() -> new IllegalStateException("Unexpected value: " + filter));
         };

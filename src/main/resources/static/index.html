@@ -47,6 +47,9 @@
                     <span @click="allTaskbyFilter('CURRENT_WEEK_TODO')">This Week's Todo</span>
                     <span @click="allTaskbyFilter('LAST_WEEK_TODO')">Last Week's Todo</span>
                     <span @click="allTaskbyFilter('NEXT_WEEK_TODO')">Next Week's Todo</span>
+                    <span @click="allTaskbyFilter('LAST_MONTH')">Last Month's Todo</span>
+                    <span @click="allTaskbyFilter('CURRENT_MONTH')">Current Month's Todo</span>
+                    <span @click="allTaskbyFilter('NEXT_MONTH')">Next Month's Todo</span>
                 </div>
                 <p class="clear_filter" v-if="clearFilter" @click="reloadTasks">Clear Filter{{'::' + filterType}}</p>
             </div>
