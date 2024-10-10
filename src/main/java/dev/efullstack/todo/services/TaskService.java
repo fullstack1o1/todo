@@ -14,6 +14,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -71,6 +73,35 @@ public class TaskService {
 
     public Mono<List<Task>> allTasks(Long userId) {
         return Mono.fromCallable(() -> taskRepository.findTasksByUserId(userId));
+    }
+
+    public Mono<List<Task>> allTasksByFilter(Long userId, String filter) {
+        return switch (filter) {
+            case "TODAY_TODO" -> Mono.fromCallable(() -> taskRepository.findTasksByUserIdAndDateIs(
+                    userId,
+                    LocalDate.now())
+            );
+            case "TOMORROW_TODO" -> Mono.fromCallable(() -> taskRepository.findTasksByUserIdAndDateIs(
+                    userId,
+                    LocalDate.now().plusDays(1))
+            );
+            case "CURRENT_WEEK_TODO" -> Mono.fromCallable(() -> taskRepository.findTasksByUserIdAndDateBetween(
+                    userId,
+                    LocalDate.now().with(DayOfWeek.MONDAY),
+                    LocalDate.now().with(DayOfWeek.SUNDAY))
+            );
+            case "NEXT_WEEK_TODO" -> Mono.fromCallable(() -> taskRepository.findTasksByUserIdAndDateBetween(
+                    userId,
+                    LocalDate.now().with(DayOfWeek.MONDAY).plusWeeks(1),
+                    LocalDate.now().with(DayOfWeek.SUNDAY).plusWeeks(1))
+            );
+            case "LAST_WEEK_TODO" -> Mono.fromCallable(() -> taskRepository.findTasksByUserIdAndDateBetween(
+                    userId,
+                    LocalDate.now().with(DayOfWeek.MONDAY).minusWeeks(1),
+                    LocalDate.now().with(DayOfWeek.SUNDAY).minusWeeks(1))
+            );
+            default -> Mono.error(() -> new IllegalStateException("Unexpected value: " + filter));
+        };
     }
 
     public Mono<Void> deleteTask(Long userId, Long taskId) {

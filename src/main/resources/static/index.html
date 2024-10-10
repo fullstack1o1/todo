@@ -17,8 +17,7 @@
                 <i class="bell fa-solid fa-bell fa-xl" @click="() => notificationToggle = !notificationToggle"></i>
                 <span style="position: absolute; top: -10px; right: -10px; background-color: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px;">0</span>
                 <div :class="notificationToggle ? 'bell__content' : 'bell__content bell__content_hide'" >
-                    <span>notification 1</span>
-                    <span>notification 2</span>
+                    <span>No any Notification...</span>
                 </div>
             </div>
         </div>
@@ -40,8 +39,17 @@
             </form>
         </div>
         
-        <div class="todo__result" v-if="Object.keys(taskGroup).length > 0">
-            <p class="clear_filter" v-if="clearFilter" @click="reloadTasks">Clear Filter</p>
+        <div class="todo__result" v-if="Object.keys(taskGroup).length > 0 || clearFilter">
+            <div style="border-top: 1px dotted blue; border-bottom: 1px dotted blue; padding: 10px;">
+                <div class="filter">
+                    <span @click="allTaskbyFilter('TODAY_TODO')">Today's Todo</span>
+                    <span @click="allTaskbyFilter('TOMORROW_TODO')">Tomorrow's Todo</span>
+                    <span @click="allTaskbyFilter('CURRENT_WEEK_TODO')">This Week's Todo</span>
+                    <span @click="allTaskbyFilter('LAST_WEEK_TODO')">Last Week's Todo</span>
+                    <span @click="allTaskbyFilter('NEXT_WEEK_TODO')">Next Week's Todo</span>
+                </div>
+                <p class="clear_filter" v-if="clearFilter" @click="reloadTasks">Clear Filter{{'::' + filterType}}</p>
+            </div>
             <ul>
                 <li v-for="x in Object.keys(taskGroup)">
                     <todos 
@@ -64,35 +72,33 @@
 
     <template id="group_todo">
         <p style="font-size: large; text-decoration: underline;">{{ date }}</p>
-        <div class="todo__item" 
+        <div :class="todo.status === 'COMPLETED' ? 'todo__item__done todo__item' : 'todo__item'"
             v-for="(todo, index) in data" :key="index" 
             @mouseover="() => hoverMenu[index] = true"
             @mouseleave="() => hoverMenu[index] = false">
             
-            <div id="todo__status" v-if="isEdit[index]">
+            <div v-if="isEdit[index]">
                 <input type="checkbox" :checked="todo.status === 'PENDING' ? false : true" @change="(e) => todo.status = e.target.checked ? 'COMPLETED' : 'PENDING' ">
             </div>
 
-            <div id="todo__status" v-else>
+            <div v-else>
                 <input type="checkbox" :checked="todo.status === 'PENDING' ? false : true" @change="(e) => updateTaskStatus(e, todo.taskId)">
             </div>
             
-            <div id="todo__date_time__edit" v-if="isEdit[index]">
+            <div v-if="isEdit[index]">
                 <input class="form__input" type="date" :value="todo.date" @change="(e) => todo.date = e.target.value">
                 <input class="form__input" type="time" :value="todo.time" @change="(e) => todo.time = e.target.value">
             </div>
             
-            <div id="todo__title_time" style="display: flex; flex-direction: column; gap: 5px;">
-                <template v-if="isEdit[index]">
-                    <input class="form__input" type="text" :value="todo.title" @change="(e) => todo.title = e.target.value">
-                </template>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <input class="form__input" type="text" :value="todo.title" @change="(e) => todo.title = e.target.value" v-if="isEdit[index]">
                 <template v-else>
                     {{ todo.title}}
                     <small>{{todo.time}}</small>
                 </template>
             </div>
 
-            <div id="todo__tags">
+            <div>
                 <div style="display: flex; flex-direction: column;" v-if="isEdit[index]">
                     <div v-for="t in todo.tags">
                         <div style="position: relative;">
@@ -105,17 +111,17 @@
                 <small class="tag" v-for="t in todo.tags" @click="filterByTag(t.tagId)" v-else>#{{ userTags.filter(uT => uT.id === t.tagId).map(fuT => fuT.name)[0] }}</small>
             </div>
             
-            <div id="todo__action" style="display: flex; flex-direction: row;">
+            <div style="display: flex; flex-direction: row;">
                 
                 <div class="todo__item__menu">
                     <i class="todo__tag fa-solid fa-hashtag fa-sm" v-if="hoverMenu[index]" @click="handleTagController(index)"></i>
                     <div :class="tagControl[index] ? 'todo__tag__container' : 'todo__tag__container todo__tag__container__hide'">
-                        <label for="newTag">New Tag</label>
-                        <input id="newTag" type="text" placeholder="new tag" v-model="newTagValue">
+                        <label>New Tag</label>
+                        <input type="text" placeholder="new tag" v-model="newTagValue">
                         <button :disabled="!newTagValue" @click="addNewTag">Ok</button>
                         
-                        <label for="selectTag">Select Tag</label>
-                        <select id="selectTag" v-model="selectedTag" @change="tagTask(index, todo.taskId, todo.tags)">
+                        <label>Select Tag</label>
+                        <select v-model="selectedTag" @change="tagTask(index, todo.taskId, todo.tags)">
                             <option value="" disabled>--Select Tag--</option>
                             <option :value="userTag.id" v-for="userTag in userTags">{{ userTag.name }}</option>
                         </select>
@@ -301,6 +307,7 @@
                 const taskGroup = ref({})
                 const userTags = ref([])
                 const clearFilter = ref(false)
+                const filterType = ref('tag')
                 const errors = ref([])
                 const notificationToggle = ref(false)
 
@@ -332,6 +339,22 @@
                         .catch(e => errors.value.push(e.message))
                 }
 
+                const allTaskbyFilter = (filter) => {
+                    fetch(`${apiHost}/todo/${userId}/tasks?filter=${filter}`)
+                        .then(response => {
+                            if(!response.ok)
+                                throw new Error("Error While fetching")
+                            return response.json()
+                        })
+                        .then(data => tasks.value = data)
+                        .then(data => {
+                            filterType.value = filter
+                            clearFilter.value = true
+
+                        })
+                        .catch(e => errors.value.push(e.message))
+                }
+
                 const allTags = () => {
                     fetch(`${apiHost}/todo/${userId}/tags`)
                         .then(response => {
@@ -344,7 +367,6 @@
                 }
 
                 const submitTask = () => {
-                    console.log(task.value)
                     saveTask(task.value)
                     task.value = {
                         date: null,
@@ -356,6 +378,7 @@
                 const reloadTasks = () => {
                     allTask()
                     clearFilter.value = false
+                    filterType.value = 'tag'
                 }
 
                 const displayAllByTag = (tagId) => {
@@ -371,7 +394,6 @@
                 }
 
                 onMounted(() => {
-                    console.log(`the component is now mounted.`)
                     allTask()
                     allTags()
                 })
@@ -387,7 +409,7 @@
                 return {
                     message, task, submitTask, tasks, taskGroup, 
                         userTags, reloadTasks, displayAllByTag, clearFilter,
-                        errors, notificationToggle
+                        errors, notificationToggle, allTaskbyFilter, filterType
                 }
             },
             components: {todos}

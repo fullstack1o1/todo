@@ -346,6 +346,17 @@ paths:
   /{userId}/tasks:
     get:
       summary: Get all tasks
+      parameters:
+        - name: filter
+          in: query
+          schema:
+            enum:
+              - TODAY_TODO
+              - TOMORROW_TODO
+              - CURRENT_WEEK_TODO
+              - LAST_WEEK_TODO
+              - NEXT_WEEK_TODO
+
       responses:
         '200':
           description: Successful response

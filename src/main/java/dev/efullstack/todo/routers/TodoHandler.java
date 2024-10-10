@@ -48,8 +48,15 @@ public class TodoHandler {
 
     public Mono<ServerResponse> tasks(ServerRequest request) {
         var userId = Long.valueOf(request.pathVariable("userId"));
-        return taskService.allTasks(userId)
-                .flatMap(ServerResponse.ok()::bodyValue);
+        var filterParam = request.queryParam("filter").orElse("ALL");
+        if (filterParam.equals("ALL")) {
+            return taskService.allTasks(userId)
+                    .flatMap(ServerResponse.ok()::bodyValue);
+        } else {
+            return taskService.allTasksByFilter(userId, filterParam)
+                    .flatMap(ServerResponse.ok()::bodyValue);
+        }
+
     }
 
     public Mono<ServerResponse> tagById(ServerRequest request) {

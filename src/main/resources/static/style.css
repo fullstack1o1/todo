@@ -41,6 +41,13 @@ small.tag:hover {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
+    border: 1px dotted gray;
+    border-radius: 5px;
+    margin-top: 5px;
+}
+
+.todo__item__done {
+    text-decoration: line-through;
 }
 
 .todo__item:hover {
@@ -79,10 +86,6 @@ small.tag:hover {
     margin: 10px 0px;
 }
 
-.todo__item div {
-    margin-right: 10px;
-}
-
 .todo__result {
     margin-top: 30px;
 }
@@ -104,6 +107,25 @@ ul li {
 
 .tag {
     margin: 10px;
+}
+
+.filter {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+.filter span {
+    /* background-color: lightblue; */
+    padding: 3px;
+    border: 1px dotted gray;
+    border-radius: 5px;
+}
+
+.filter span:hover {
+    cursor: pointer;
+    background-color: blue;
+    color: white;
 }
 
 .clear_filter {
