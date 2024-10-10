@@ -118,7 +118,9 @@ ul li {
     flex-direction: column; 
     border: 1px dotted red; 
     margin-top: 10px;
-    color: red;
+    color: white;
+    background-color: red;
+    padding: 10px;
 }
 
 .x-edit-tag {
