@@ -42,14 +42,7 @@
         <div class="todo__result" v-if="Object.keys(taskGroup).length > 0 || clearFilter">
             <div style="border-top: 1px dotted blue; border-bottom: 1px dotted blue; padding: 10px;">
                 <div class="filter">
-                    <span @click="allTaskbyFilter('TODAY_TODO')">Today's Todo</span>
-                    <span @click="allTaskbyFilter('TOMORROW_TODO')">Tomorrow's Todo</span>
-                    <span @click="allTaskbyFilter('CURRENT_WEEK_TODO')">This Week's Todo</span>
-                    <span @click="allTaskbyFilter('LAST_WEEK_TODO')">Last Week's Todo</span>
-                    <span @click="allTaskbyFilter('NEXT_WEEK_TODO')">Next Week's Todo</span>
-                    <span @click="allTaskbyFilter('LAST_MONTH')">Last Month's Todo</span>
-                    <span @click="allTaskbyFilter('CURRENT_MONTH')">Current Month's Todo</span>
-                    <span @click="allTaskbyFilter('NEXT_MONTH')">Next Month's Todo</span>
+                    <span v-for="f in Object.keys(filters)" :class="filterType === f ? 'selected_filter' : '' " @click="allTaskbyFilter(f)">{{filters[f]}}</span>
                 </div>
                 <p class="clear_filter" v-if="clearFilter" @click="reloadTasks">Clear Filter{{'::' + filterType}}</p>
             </div>
@@ -313,6 +306,16 @@
                 const filterType = ref('tag')
                 const errors = ref([])
                 const notificationToggle = ref(false)
+                const filters = ref({
+                    TODAY_TODO: 'Today\'s Todo',
+                    TOMORROW_TODO: 'Tomorrow\'s Todo',
+                    CURRENT_WEEK_TODO: 'This Week\'s Todo',
+                    LAST_WEEK_TODO: 'Last Week\'s Todo',
+                    NEXT_WEEK_TODO: 'Next Week\'s Todo',
+                    LAST_MONTH: 'Last Month\'s Todo',
+                    CURRENT_MONTH: 'Current Month\'s Todo',
+                    NEXT_MONTH: 'Next Month\'s Todo',
+                })
 
                 const saveTask = (task) => {
                   fetch(`${apiHost}/todo/${userId}/tasks`,{
@@ -412,7 +415,7 @@
                 return {
                     message, task, submitTask, tasks, taskGroup, 
                         userTags, reloadTasks, displayAllByTag, clearFilter,
-                        errors, notificationToggle, allTaskbyFilter, filterType
+                        errors, notificationToggle, allTaskbyFilter, filterType, filters
                 }
             },
             components: {todos}

@@ -128,6 +128,11 @@ ul li {
     color: white;
 }
 
+.selected_filter {
+    background-color: blue;
+    color: white;
+}
+
 .clear_filter {
     text-align: right;
     color: blue;
