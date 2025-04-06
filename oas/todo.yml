@@ -122,7 +122,6 @@ components:
         - taskId
         - title
         - date
-        - tags
 
     TaskPatch:
       type: object

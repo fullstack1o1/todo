@@ -12,6 +12,8 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+import java.util.Objects;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -25,8 +27,15 @@ public class TodoHandler {
         return request
                 .bodyToMono(Task.class)
                 .doOnNext(task -> log.info("Task: {}", task))
+                .doOnNext(this::validate)
                 .flatMap(task -> taskService.newTask(userId, task))
                 .flatMap(ServerResponse.ok()::bodyValue);
+    }
+
+    private void validate(Task task) {
+        assert task != null;
+        assert task.getDate() != null;
+        assert task.getTitle() != null && !task.getTitle().isEmpty();
     }
 
     public Mono<ServerResponse> newTags(ServerRequest request) {
