@@ -14,4 +14,5 @@ public interface TaskRepository extends ListCrudRepository<Task, Long> {
 
     List<Task> findTasksByUserIdAndDateIs(Long userId, LocalDate date);
     List<Task> findTasksByUserIdAndDateBetween(Long userId, LocalDate startDate, LocalDate endDate);
+    List<Task> findTasksByUserIdAndDateIsLessThan(Long userId, LocalDate date);
 }

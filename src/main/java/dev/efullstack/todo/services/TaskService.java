@@ -135,8 +135,12 @@ public class TaskService {
         //Grab all the tasks for the user which are due today and which are from past date but status not equal to COMPLETE
         var dueToday = Mono.fromCallable(() -> taskRepository.findTasksByUserIdAndDateIs(userId, LocalDate.now()));
         var dueYesterday = Mono.fromCallable(() -> taskRepository.findTasksByUserIdAndDateIs(userId, LocalDate.now().minusDays(1)));
+        //Todo
+        // tasks which are older than today
+        var olderThanToday = Mono.fromCallable(() -> taskRepository.findTasksByUserIdAndDateIsLessThan(userId, LocalDate.now()));
 
-        return dueToday.zipWith(dueYesterday, (dT, dY) -> {
+
+        return dueToday.zipWith(olderThanToday, (dT, dY) -> {
                     var tasks = new HashSet<Task>();
                     tasks.addAll(dT);
                     tasks.addAll(dY);
