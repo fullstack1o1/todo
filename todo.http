@@ -20,13 +20,19 @@ Content-Type: application/json
 {
   "title": "Buy grocery",
   "description": "Task 1",
-  "date": "2021-08-01",
-  "time": "00:00:15",
-  "tags": [
-    {
-      "tagId": 1
-    }
-  ]
+  "date": "2025-05-11",
+  "time": "00:00:15"
+}
+
+### POST task-2
+POST {{host}}/todo/1/tasks
+Content-Type: application/json
+
+{
+  "title": "Book Ticket",
+  "description": "Task 2",
+  "date": "2025-05-10",
+  "time": "00:00:15"
 }
 
 ### PATCH task
@@ -41,6 +47,14 @@ Content-Type: application/json
   ]
 }
 
+### PATCH task COMPLETED
+PATCH {{host}}/todo/1/tasks/2
+Content-Type: application/json
+
+{
+  "status": "COMPLETED"
+}
+
 ### GET task
 GET {{host}}/todo/1/tasks/1
 Content-Type: application/json
@@ -48,3 +62,5 @@ Content-Type: application/json
 ### DELETE tags
 DELETE {{host}}/todo/1/tags/2
 
+### GET notifications
+GET {{host}}/todo/1/notification

@@ -127,4 +127,11 @@ public class TodoHandler {
         return tagService.deleteTag(userId, tagId)
                 .then(ServerResponse.ok().build());
     }
+
+    public Mono<ServerResponse> notification(ServerRequest request) {
+        //Grab all the tasks for the user which are due today and which are already due but not completed
+        var userId = Long.valueOf(request.pathVariable("userId"));
+        return taskService.notification(userId)
+                .flatMap(ServerResponse.ok()::bodyValue);
+    }
 }

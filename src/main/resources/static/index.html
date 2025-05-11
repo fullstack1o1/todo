@@ -205,9 +205,16 @@
             <h1>{{ message }}</h1>
             <div style="position: relative;">
                 <i class="bell fa-solid fa-bell fa-xl" @click="() => notificationToggle = !notificationToggle"></i>
-                <span style="position: absolute; top: -10px; right: -10px; background-color: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px;">0</span>
+                <span style="position: absolute; top: -10px; right: -10px; background-color: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px;">{{notificationCount}}</span>
                 <div :class="notificationToggle ? 'bell__content' : 'bell__content bell__content_hide'" >
-                    <span>No any Notification...</span>
+                    <template v-if="notificationCount > 0" v-for="n in notification">
+                        <p>
+                            "{{n.title}}" task is on due {{n.date}}
+                        </p>
+                        <hr/>
+                    </template>
+
+                    <span v-else>No any Notification...</span>
                 </div>
             </div>
         </div>
@@ -506,6 +513,8 @@
                     CURRENT_MONTH: 'Current Month\'s Todo',
                     NEXT_MONTH: 'Next Month\'s Todo',
                 })
+                const notificationCount = ref(0)
+                const notification = ref([])
 
                 const saveTask = (task) => {
                   fetch(`${apiHost}/todo/${userId}/tasks`,{
@@ -589,9 +598,27 @@
                         .catch(e => errors.value.push(e.message))
                 }
 
+                const pullNotification = () => {
+                    fetch(`${apiHost}/todo/${userId}/notification`)
+                        .then(response => {
+                            if(!response.ok)
+                                throw new Error("Error While fetching notification")
+                            return response.json()
+                        })
+                        .then(data => {
+                            notification.value = data
+                            notificationCount.value = data.length
+                        })
+                        .catch(e => errors.value.push(e.message))
+                }
+
                 onMounted(() => {
                     allTask()
                     allTags()
+                    // pullNotification() on every 30 sec
+                    setInterval(() => {
+                        pullNotification()
+                    }, 30000)
                 })
                 
                 watch(
@@ -605,7 +632,8 @@
                 return {
                     message, task, submitTask, tasks, taskGroup, 
                         userTags, reloadTasks, displayAllByTag, clearFilter,
-                        errors, notificationToggle, allTaskbyFilter, filterType, filters
+                            errors, notificationToggle, allTaskbyFilter, filterType, filters,
+                                notificationCount, notification
                 }
             },
             components: {todos}

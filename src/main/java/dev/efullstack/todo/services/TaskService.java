@@ -130,4 +130,25 @@ public class TaskService {
                 .publishOn(Schedulers.boundedElastic())
                 .map(dbTask -> taskRepository.save(task));
     }
+
+    public Mono<List<Task>> notification(Long userId) {
+        //Grab all the tasks for the user which are due today and which are from past date but status not equal to COMPLETE
+        var dueToday = Mono.fromCallable(() -> taskRepository.findTasksByUserIdAndDateIs(userId, LocalDate.now()));
+        var dueYesterday = Mono.fromCallable(() -> taskRepository.findTasksByUserIdAndDateIs(userId, LocalDate.now().minusDays(1)));
+
+        return dueToday.zipWith(dueYesterday, (dT, dY) -> {
+                    var tasks = new HashSet<Task>();
+                    tasks.addAll(dT);
+                    tasks.addAll(dY);
+                    return tasks;
+                })
+                .flatMap(tasks -> {
+                    if (isEmpty(tasks)) {
+                        return Mono.just(List.of());
+                    }
+                    return Flux.fromIterable(tasks)
+                            .filter(task -> task.getStatus().equals(Task.TaskStatus.PENDING))
+                            .collectList();
+                });
+    }
 }

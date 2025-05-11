@@ -19,6 +19,7 @@ public class TodoRouters {
                     return request;
                 })
                 .path("/todo/{userId}", builder -> builder
+                        .GET("/notification", todoHandler::notification)
                         .POST("/tasks", todoHandler::createTask)
                         .GET("/tasks/{taskId}", todoHandler::findTaskById)
                         .GET("/tasks", todoHandler::tasks)

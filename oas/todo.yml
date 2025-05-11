@@ -608,3 +608,24 @@ paths:
                 $ref: '#/components/schemas/TagTask'
         '404':
           description: Tag not found
+  /{userId}/notification:
+    get:
+      summary: Get due and past due tasks
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+        '404':
+          description: No tasks found
