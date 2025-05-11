@@ -1,0 +1,50 @@
+@host = http://localhost:8080
+
+### POST tags
+POST {{host}}/todo/1/tags
+Content-Type: application/json
+
+{
+  "name": "shopping"
+}
+
+### GET tags
+GET {{host}}/todo/1/tags
+Content-Type: application/json
+
+
+### POST task
+POST {{host}}/todo/1/tasks
+Content-Type: application/json
+
+{
+  "title": "Buy grocery",
+  "description": "Task 1",
+  "date": "2021-08-01",
+  "time": "00:00:15",
+  "tags": [
+    {
+      "tagId": 1
+    }
+  ]
+}
+
+### PATCH task
+PATCH {{host}}/todo/1/tasks/1
+Content-Type: application/json
+
+{
+  "tags": [
+    {
+      "tagId": 2
+    }
+  ]
+}
+
+### GET task
+GET {{host}}/todo/1/tasks/1
+Content-Type: application/json
+
+### DELETE tags
+DELETE {{host}}/todo/1/tags/2
+

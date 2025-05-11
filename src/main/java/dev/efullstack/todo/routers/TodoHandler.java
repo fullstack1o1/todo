@@ -120,4 +120,11 @@ public class TodoHandler {
                 .flatMap(tag -> tagService.updateTag(userId, tagId, tag))
                 .flatMap(ServerResponse.ok()::bodyValue);
     }
+
+    public Mono<ServerResponse> deleteTag(ServerRequest request) {
+        var userId = Long.valueOf(request.pathVariable("userId"));
+        var tagId = Long.valueOf(request.pathVariable("tagId"));
+        return tagService.deleteTag(userId, tagId)
+                .then(ServerResponse.ok().build());
+    }
 }

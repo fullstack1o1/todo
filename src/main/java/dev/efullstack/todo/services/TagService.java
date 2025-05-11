@@ -47,4 +47,11 @@ public class TagService {
     public Mono<List<Tag>> allTag(Long userId) {
         return Mono.fromCallable(() -> tagRepository.findAllByUserId(userId));
     }
+
+    public Mono<Void> deleteTag(Long userId, Long tagId) {
+        return tagById(userId, tagId)
+                .publishOn(Schedulers.boundedElastic())
+                .doOnNext(tagRepository::delete)
+                .then();
+    }
 }

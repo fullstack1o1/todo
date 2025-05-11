@@ -111,6 +111,13 @@ public class TodoRouterTest {
                         .exchange()
                         .expectStatus()
                         .isNotFound(),
+                //TAG delete
+                /*() -> webTestClient
+                        .delete()
+                        .uri("/todo/{userId}/tags/{tagId}", userId, 1)
+                        .exchange()
+                        .expectStatus()
+                        .isOk(),*/
                 //TASK - POST
                 () -> webTestClient
                         .post()

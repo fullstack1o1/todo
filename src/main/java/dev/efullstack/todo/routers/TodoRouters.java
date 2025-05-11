@@ -31,7 +31,7 @@ public class TodoRouters {
                         .PUT("/tags/{tagId}",todoHandler::updateTag)
                         .PATCH("/tags/{tagId}", todoHandler::patchTag)
                         .GET("/tags", todoHandler::tags)
-                        .DELETE("/tags/{tagId}", request -> ServerResponse.noContent().build())
+                        .DELETE("/tags/{tagId}", todoHandler::deleteTag)
                 )
                 .after((request, response) -> {
                     log.info("RESPONSE {} {} {}", request.method(), request.path(), response.statusCode());
