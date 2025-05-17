@@ -1,5 +1,6 @@
 package dev.efullstack.todo.routers;
 
+import dev.efullstack.todo.ValidationException;
 import dev.efullstack.todo.models.Tag;
 import dev.efullstack.todo.models.Task;
 import dev.efullstack.todo.services.TagService;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
+
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -25,16 +28,28 @@ public class TodoHandler {
         return request
                 .bodyToMono(Task.class)
                 .doOnNext(task -> log.info("Task: {}", task))
+                .doOnNext(this::validate)
                 .flatMap(task -> taskService.newTask(userId, task))
                 .flatMap(ServerResponse.ok()::bodyValue);
+    }
+
+    private void validate(Task task) {
+        if (Objects.isNull(task.getTitle())) throw new ValidationException("Title is required");
+        if (Objects.isNull(task.getDate())) throw new ValidationException("Date is required");
     }
 
     public Mono<ServerResponse> newTags(ServerRequest request) {
         var userId = Long.valueOf(request.pathVariable("userId"));
         return request
                 .bodyToMono(Tag.class)
+                .doOnNext(tag -> log.info("Tag: {}", tag))
+                .doOnNext(this::validateTag)
                 .flatMap(tag -> tagService.newTag(userId, tag))
                 .flatMap(tag -> ServerResponse.ok().bodyValue(tag));
+    }
+
+    private void validateTag(Tag tag) {
+        if (Objects.isNull(tag.getName())) throw new ValidationException("Tag name is required");
     }
 
     public Mono<ServerResponse> patchTask(ServerRequest request) {
@@ -135,3 +150,4 @@ public class TodoHandler {
                 .flatMap(ServerResponse.ok()::bodyValue);
     }
 }
+
