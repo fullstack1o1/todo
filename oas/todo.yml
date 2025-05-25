@@ -347,6 +347,12 @@ paths:
     get:
       summary: Get all tasks
       parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
         - name: filter
           in: query
           schema:
@@ -371,6 +377,13 @@ paths:
                   $ref: '#/components/schemas/Task'
     post:
       summary: Create a new task
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+              type: integer
+              format: int64
       requestBody:
         required: true
         content:
@@ -389,6 +402,12 @@ paths:
     get:
       summary: Get a task by ID
       parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
         - in: path
           name: taskId
           required: true
@@ -408,6 +427,12 @@ paths:
     put:
       summary: Update a task
       parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            format: int64
         - in: path
           name: taskId
           required: true
@@ -434,6 +459,12 @@ paths:
       summary: Partial Update a task
       parameters:
         - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
           name: taskId
           required: true
           schema:
@@ -459,6 +490,12 @@ paths:
       summary: Delete a task
       parameters:
         - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
           name: taskId
           required: true
           schema:
@@ -473,6 +510,13 @@ paths:
   /{userId}/tags:
     get:
       summary: Get all tags
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+              type: integer
+              format: int64
       responses:
         '200':
           description: Successful response
@@ -484,6 +528,13 @@ paths:
                   $ref: '#/components/schemas/Tag'
     post:
       summary: Create a new tag
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+              type: integer
+              format: int64
       requestBody:
         required: true
         content:
@@ -503,6 +554,12 @@ paths:
       summary: Get a tag by ID
       parameters:
         - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
           name: tagId
           required: true
           schema:
@@ -521,6 +578,12 @@ paths:
     put:
       summary: Update a tag
       parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            format: int64
         - in: path
           name: tagId
           required: true
@@ -547,6 +610,12 @@ paths:
       summary: Partial Update a tag
       parameters:
         - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
           name: tagId
           required: true
           schema:
@@ -571,6 +640,12 @@ paths:
     delete:
       summary: Delete a tag
       parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            format: int64
         - in: path
           name: tagId
           required: true
